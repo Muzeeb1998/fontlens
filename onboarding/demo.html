@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FontLens — Welcome</title>
+  <link rel="stylesheet" href="./demo.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <main>
+    <header class="brand">FontLens</header>
+
+    <p class="instruction" id="instruction">
+      Hover the headlines below.
+    </p>
+
+    <section class="demo">
+      <h1 class="fallback-headline">This headline asks for a font that isn't loaded.</h1>
+      <p class="fallback-body">It falls back to your system serif — visitors don't see what the designer chose.</p>
+
+      <h1 class="working-headline">This one renders the font the designer chose.</h1>
+      <p class="working-body">Same hover, no fallback dot.</p>
+    </section>
+
+    <p class="confirmation" id="confirmation" hidden>
+      ✓ You've seen the fallback signal — that's the part nobody else shows you.
+    </p>
+
+    <button class="cta" id="exit-button" type="button">Try it on your favorite site</button>
+  </main>
+
+  <script type="module" src="./demo.js"></script>
+</body>
+</html>

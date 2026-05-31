@@ -132,6 +132,9 @@ export class Overlay {
         r.textContent = `requested: ${requested}`;
         chip.appendChild(r);
       }
+
+      // Onboarding demo listens for this. No-op on every other page.
+      try { window.postMessage({ type: 'fontlens:fallback-seen' }, '*'); } catch {}
     }
 
     if (detail.confidence === 'low') {
