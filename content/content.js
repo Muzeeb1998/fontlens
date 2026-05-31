@@ -29,10 +29,22 @@ function defaultMessaging() {
   };
 }
 
+const HIGHLIGHT_STYLE_ID = 'fontlens-highlight-style';
+const HIGHLIGHT_CSS = `.fontlens-highlight { outline: 2px solid #f59e0b !important; outline-offset: 2px !important; }`;
+
+function ensureHighlightStyle() {
+  if (document.getElementById(HIGHLIGHT_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = HIGHLIGHT_STYLE_ID;
+  style.textContent = HIGHLIGHT_CSS;
+  document.documentElement.appendChild(style);
+}
+
 export class ContentScript {
-  constructor({ detect, messaging, raf } = {}) {
+  constructor({ detect, extract, messaging, raf } = {}) {
     if (typeof detect !== 'function') throw new Error('ContentScript: detect required');
     this._detect = detect;
+    this._extract = extract;
     this._messaging = messaging || defaultMessaging();
     this._raf = raf || ((fn) => requestAnimationFrame(fn));
 
@@ -44,6 +56,7 @@ export class ContentScript {
     this._rafPending = false;
     this._lastCursor = null;
     this._enabled = false;
+    this._nodeMap = new Map();          // id → Element (for highlight messages)
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onClick     = this._onClick.bind(this);
@@ -53,6 +66,7 @@ export class ContentScript {
 
   enable() {
     if (this._enabled) return;
+    ensureHighlightStyle();
     this.overlay.mount();
     window.addEventListener('mousemove', this._onMouseMove, true);
     window.addEventListener('click',     this._onClick,     true);
@@ -105,11 +119,59 @@ export class ContentScript {
 
   _onMessage(msg) {
     if (!msg || typeof msg !== 'object') return;
-    if (msg.type === 'fontlens.mode' && (msg.mode === 'hover' || msg.mode === 'inspect')) {
-      this.overlay.setMode(msg.mode);
-    } else if (msg.type === 'fontlens.disable') {
-      this.disable();
+    switch (msg.type) {
+      case 'fontlens:set-mode':
+        if (msg.mode === 'hover' || msg.mode === 'inspect') {
+          this.overlay.setMode(msg.mode);
+          this._messaging.sendMessage({ type: 'fontlens:mode-changed', mode: msg.mode });
+        }
+        return;
+      case 'fontlens:request-extract':
+        this._sendExtractResult();
+        return;
+      case 'fontlens:highlight':
+        this._applyHighlight(msg.nodeIds || []);
+        return;
+      case 'fontlens:unhighlight':
+        this._clearHighlight();
+        return;
+      case 'fontlens:disable':
+        this.disable();
+        return;
     }
+  }
+
+  _sendExtractResult() {
+    if (!this._extract) return;
+    try {
+      this._nodeMap.clear();
+      const out = this._extract(document.body || document.documentElement, {
+        nodeMap: this._nodeMap,
+        hostname: location.hostname,
+      });
+      this._messaging.sendMessage({
+        type: 'fontlens:extract-result',
+        payload: {
+          hostname: out.hostname,
+          totalNodes: out.totalNodes,
+          truncated: out.truncated,
+          groups: out.groups,
+        },
+      });
+    } catch (e) {
+      console.error('[FontLens] extract failed:', e);
+    }
+  }
+
+  _applyHighlight(ids) {
+    for (const id of ids) {
+      const el = this._nodeMap.get(id);
+      if (el && el.classList) el.classList.add('fontlens-highlight');
+    }
+  }
+
+  _clearHighlight() {
+    document.querySelectorAll('.fontlens-highlight').forEach(el => el.classList.remove('fontlens-highlight'));
   }
 
   _isOurOwnUI(el) {
@@ -123,20 +185,56 @@ export class ContentScript {
   }
 
   _onOverlayEmit(evt) {
-    const payload = {
-      type: 'fontlens.row',
-      kind: evt.kind,
-      detail: evt.detail || null,
-    };
-    this._messaging.sendMessage(payload);
+    if (evt.kind === 'hover-click') {
+      // Build a single-row family group for the side panel's hover-pick path.
+      const detail = evt.detail;
+      if (!detail) return;
+      const group = {
+        family: detail.rendered || 'Unknown',
+        source: { type: detail.source?.type || 'unknown', format: detail.source?.format || null },
+        isFallback: !!detail.isFallback,
+        requestedFamily: detail.isFallback ? (detail.requested?.[0] || null) : undefined,
+        isVariable: !!detail.isVariable,
+        axes: detail.axes || null,
+        rows: [{
+          key: 'hover-pick',
+          role: 'Body',
+          count: 1,
+          nodeIds: [],
+          detail,
+        }],
+      };
+      this._messaging.sendMessage({
+        type: 'fontlens:hover-pick',
+        payload: { hostname: location.hostname, group },
+      });
+      return;
+    }
+    if (evt.kind === 'inspect-click') {
+      // Run extract scoped to the clicked element so the panel shows just it.
+      if (!this._extract || !evt.target) return;
+      try {
+        this._nodeMap.clear();
+        const out = this._extract(evt.target, {
+          nodeMap: this._nodeMap,
+          hostname: location.hostname,
+        });
+        this._messaging.sendMessage({ type: 'fontlens:extract-result', payload: out });
+      } catch (e) {
+        console.error('[FontLens] inspect-click extract failed:', e);
+      }
+    }
   }
 }
 
 // Auto-boot when loaded as a content script (chrome.scripting.executeScript).
 // Suppressed in tests because tests instantiate ContentScript manually.
 if (typeof window !== 'undefined' && typeof globalThis.__FONTLENS_TEST__ === 'undefined') {
-  import('../lib/detector.js').then(({ detect }) => {
-    const cs = new ContentScript({ detect });
+  Promise.all([
+    import('../lib/detector.js'),
+    import('../lib/extractor.js'),
+  ]).then(([{ detect }, { extract }]) => {
+    const cs = new ContentScript({ detect, extract });
     cs.enable();
     globalThis.__fontlens = cs;
   }).catch((err) => {

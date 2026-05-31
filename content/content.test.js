@@ -54,7 +54,7 @@ describe('ContentScript — wiring', () => {
     const msg = fakeMessaging();
     cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });
     cs.enable();
-    msg._emit({ type: 'fontlens.mode', mode: 'inspect' });
+    msg._emit({ type: 'fontlens:set-mode', mode: 'inspect' });
     expect(cs.overlay.getMode()).toBe('inspect');
   });
 
@@ -96,16 +96,16 @@ describe('ContentScript — wiring', () => {
 
     expect(msg.sendMessage).toHaveBeenCalled();
     const [arg] = msg.sendMessage.mock.calls[0];
-    expect(arg.type).toBe('fontlens.row');
-    expect(arg.kind).toBe('hover-click');
-    expect(arg.detail.rendered).toBe('Inter');
+    expect(arg.type).toBe('fontlens:hover-pick');
+    expect(arg.payload.group.family).toBe('Inter');
+    expect(arg.payload.group.rows[0].detail.rendered).toBe('Inter');
   });
 
   it('click in inspect mode does not navigate the page (preventDefault)', () => {
     const msg = fakeMessaging();
     cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });
     cs.enable();
-    msg._emit({ type: 'fontlens.mode', mode: 'inspect' });
+    msg._emit({ type: 'fontlens:set-mode', mode: 'inspect' });
 
     const a = document.createElement('a');
     a.href = 'https://example.com/';
