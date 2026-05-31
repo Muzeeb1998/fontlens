@@ -11,7 +11,7 @@
   --border-strong:   #d4d4d8;
   --fg:              #0f0f10;
   --fg-muted:        #6b6b6e;
-  --fg-faint:        #9c9ca0;
+  --fg-faint:        #76767a;   /* AA-safe on #fff (4.6:1) — meaningful footnotes etc. */
   --accent:          #0f0f10;
   --link:            #1e6fd8;
   --amber-500:       #f59e0b;
@@ -52,7 +52,7 @@
   --border-strong:   #3a3a3f;
   --fg:              #f5f5f7;
   --fg-muted:        #a1a1a6;
-  --fg-faint:        #6b6b6e;
+  --fg-faint:        #8a8a8e;   /* AA-safe on #0e0e10 (5.6:1) */
   --accent:          #f5f5f7;
   --link:            #5fa8ff;
   --amber-500:       #f5b840;
@@ -73,7 +73,7 @@
     --border-strong:   #3a3a3f;
     --fg:              #f5f5f7;
     --fg-muted:        #a1a1a6;
-    --fg-faint:        #6b6b6e;
+    --fg-faint:        #8a8a8e;   /* AA-safe on #0e0e10 (5.6:1) */
     --accent:          #f5f5f7;
     --link:            #5fa8ff;
     --amber-500:       #f5b840;

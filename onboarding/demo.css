@@ -45,9 +45,10 @@ main {
 .brand {
   font-weight: 600;
   font-size: 13px;
+  line-height: 1.4;
   letter-spacing: 0.02em;
   color: var(--fg-muted);
-  margin-bottom: 48px;
+  margin: 0 0 48px;
 }
 
 .instruction {
