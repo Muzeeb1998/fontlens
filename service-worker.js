@@ -21,6 +21,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (chrome.sidePanel?.open && tab?.id != null) {
     try { await chrome.sidePanel.open({ tabId: tab.id }); } catch {}
   }
+  // The demo page bootstraps the content script inline (see
+  // onboarding/demo.html). chrome.scripting cannot inject into the
+  // extension's own pages without explicit host_permissions, so we ship
+  // a <script type="module"> tag on the demo HTML itself.
 });
 
 // Toolbar click: Chrome opens the side panel via setPanelBehavior. Inject the

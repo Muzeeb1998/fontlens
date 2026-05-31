@@ -31,6 +31,10 @@
     <button class="cta" id="exit-button" type="button">Try it on your favorite site</button>
   </main>
 
+  <!-- Boot the FontLens content script on this page. The script's
+       module-level auto-boot mounts the overlay and starts listening to
+       mousemove so the chip shows when the user hovers the headlines. -->
+  <script type="module" src="../content/content.js"></script>
   <script type="module" src="./demo.js"></script>
 </body>
 </html>
