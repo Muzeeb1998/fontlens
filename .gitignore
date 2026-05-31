@@ -13,3 +13,6 @@ test/harness/fonts/*.ttf
 !test/harness/fonts/.gitkeep
 dist/
 store/screenshots/*.png
+.gstack/
+test-results/
+playwright-report/
