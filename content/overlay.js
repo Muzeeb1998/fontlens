@@ -242,8 +242,14 @@ export class Overlay {
       return;
     }
 
+    // Hover mode click: emit the detected row to the side panel BUT keep
+    // the floating chip live so the user can continue hovering other text
+    // and see new detections (WhatFont parity). Pinning is reserved for an
+    // explicit gesture (Shift+click) so cursor-follow stays the default.
     const detail = this._lastDetail?.detail || this._detect(el);
-    this.pin();
+    if (ev && (ev.shiftKey || ev.metaKey)) {
+      this.pin();
+    }
     this._onEmit({ kind: 'hover-click', target: el, detail });
   }
 

@@ -239,7 +239,7 @@ describe('Overlay — modes + emission', () => {
     expect(overlay._outline.style.display).toBe('none');
   });
 
-  it('handleClick in hover mode pins chip + emits hover-click event', () => {
+  it('handleClick in hover mode emits hover-click but does NOT pin (keeps cursor-follow alive)', () => {
     const onEmit = vi.fn();
     overlay = new Overlay({ detect: fakeDetect, onEmit });
     overlay.mount();
@@ -255,11 +255,26 @@ describe('Overlay — modes + emission', () => {
 
     overlay.handleClick(el, ev);
 
-    expect(overlay.isPinned()).toBe(true);
+    expect(overlay.isPinned()).toBe(false);  // chip keeps following cursor
     expect(onEmit).toHaveBeenCalledTimes(1);
     expect(onEmit.mock.calls[0][0]).toMatchObject({ kind: 'hover-click' });
     expect(onEmit.mock.calls[0][0].detail.rendered).toBe('Inter');
     expect(prevented).toBe(true);
+  });
+
+  it('Shift+click in hover mode pins the chip (explicit pin gesture)', () => {
+    const onEmit = vi.fn();
+    overlay = new Overlay({ detect: fakeDetect, onEmit });
+    overlay.mount();
+    overlay.setMode('hover');
+    const el = document.createElement('p');
+    overlay.show(el, { x: 100, y: 100 });
+
+    const ev = { shiftKey: true, preventDefault: () => {}, stopPropagation: () => {} };
+    overlay.handleClick(el, ev);
+
+    expect(overlay.isPinned()).toBe(true);
+    expect(onEmit).toHaveBeenCalledTimes(1);
   });
 
   it('handleClick in inspect mode emits inspect-click and prevents host navigation', () => {
