@@ -65,8 +65,8 @@ Boundaries:
     "harness": "python3 -m http.server 5173 --directory test/harness"
   },
   "devDependencies": {
-    "happy-dom": "^15.0.0",
-    "vitest": "^2.1.0"
+    "happy-dom": "^20.9.0",
+    "vitest": "^4.1.7"
   }
 }
 ```
