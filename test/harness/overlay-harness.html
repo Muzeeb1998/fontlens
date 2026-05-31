@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FontLens — Overlay Harness</title>
+  <link rel="stylesheet" href="./fixtures.css">
+  <style>
+    section.fixture { margin: 24px 0; }
+    .demo {
+      padding: 24px;
+      border: 1px dashed #d4d4d8;
+      border-radius: 8px;
+      min-height: 80px;
+    }
+    .controls {
+      position: fixed; bottom: 16px; left: 16px;
+      background: #fff; border: 1px solid #ececec; border-radius: 8px;
+      padding: 8px 12px; font: 12px ui-monospace, Menlo, monospace;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      z-index: 100;
+    }
+    .controls button { font: inherit; margin-right: 6px; }
+    a.live-link { color: #1e6fd8; }
+    @media (prefers-color-scheme: dark) {
+      .demo { border-color: #3a3a3f; }
+      .controls { background: #161618; border-color: #26262a; color: #f5f5f7; }
+    }
+  </style>
+</head>
+<body>
+  <h1>FontLens — Overlay Harness</h1>
+  <p>Move your cursor over the text below. The chip should follow with an 80ms ease.
+  Click the chip (or any text) to pin. Press <code>Esc</code> to unpin. Use the buttons bottom-left
+  to switch between Hover and Inspect modes.</p>
+
+  <section class="fixture">
+    <h2>1. Present face — no fallback expected</h2>
+    <div class="demo" style="font-family: 'HarnessReal', sans-serif; font-size: 22px;">
+      The quick brown fox jumps over the lazy dog.
+    </div>
+  </section>
+
+  <section class="fixture">
+    <h2>2. Missing face — amber dot + "requested: HarnessMissing"</h2>
+    <div class="demo" style="font-family: 'HarnessMissing', Arial, sans-serif; font-size: 22px;">
+      The quick brown fox jumps over the lazy dog.
+    </div>
+  </section>
+
+  <section class="fixture">
+    <h2>3. System stack — chip names the OS font</h2>
+    <div class="demo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 22px;">
+      The quick brown fox jumps over the lazy dog.
+    </div>
+  </section>
+
+  <section class="fixture">
+    <h2>4. Inspect mode + link — click MUST NOT navigate</h2>
+    <p>
+      Switch to Inspect mode, then click this link:
+      <a class="live-link" href="https://example.com/this-should-not-load">don't follow me</a>.
+      The URL bar should not change.
+    </p>
+  </section>
+
+  <section class="fixture">
+    <h2>5. Right-edge flip — hover near the right viewport edge</h2>
+    <div class="demo" style="text-align: right; font-size: 22px;">
+      <span style="font-family: Georgia, serif;">Near the edge — chip should flip left.</span>
+    </div>
+  </section>
+
+  <section class="fixture">
+    <h2>6. Reduced motion — chip should snap, not ease (toggle via OS)</h2>
+    <div class="demo" style="font-family: 'HarnessReal', sans-serif; font-size: 22px;">
+      Enable "Reduce Motion" in your OS, reload, and verify no transition.
+    </div>
+  </section>
+
+  <div class="controls">
+    Mode: <span id="mode">hover</span>
+    &nbsp;
+    <button id="m-hover">Hover</button>
+    <button id="m-inspect">Inspect</button>
+    <button id="disable">Disable overlay</button>
+    &nbsp;|&nbsp;
+    Last emit: <span id="emit">—</span>
+  </div>
+
+  <script type="module" src="./overlay-harness.js"></script>
+</body>
+</html>
