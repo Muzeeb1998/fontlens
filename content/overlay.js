@@ -180,8 +180,28 @@ export class Overlay {
     if (!this._chip || !cursor) return;
     const offsetX = 14;
     const offsetY = 18;
-    const x = Math.round(cursor.x + offsetX);
-    const y = Math.round(cursor.y + offsetY);
-    this._chip.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    const rect = this._chip.getBoundingClientRect();
+    const vw = (typeof window !== 'undefined' && window.innerWidth)  || 1024;
+    const vh = (typeof window !== 'undefined' && window.innerHeight) || 768;
+
+    let x = cursor.x + offsetX;
+    let y = cursor.y + offsetY;
+
+    if (x + rect.width > vw) {
+      x = cursor.x - rect.width - offsetX;
+    }
+    if (y + rect.height > vh) {
+      y = cursor.y - rect.height - offsetY;
+    }
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+
+    this._chip.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+  }
+
+  move(cursor) {
+    if (this._pinned) return;
+    if (!this._chip || this._chip.style.display === 'none') return;
+    this._position(cursor);
   }
 }

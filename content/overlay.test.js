@@ -163,3 +163,50 @@ describe('Overlay — chip render', () => {
     expect(chip.style.display).not.toBe('none');
   });
 });
+
+describe('Overlay — positioning', () => {
+  function makeReady(rect) {
+    overlay = new Overlay({ detect: fakeDetect, onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 0, y: 0 });
+    overlay._chip.getBoundingClientRect = () => ({ width: rect.w, height: rect.h, top: 0, left: 0, right: rect.w, bottom: rect.h });
+    return overlay._chip;
+  }
+
+  it('places chip below-right of cursor by default', () => {
+    const chip = makeReady({ w: 180, h: 60 });
+    Object.defineProperty(window, 'innerWidth',  { value: 1200, configurable: true });
+    Object.defineProperty(window, 'innerHeight', { value:  800, configurable: true });
+
+    overlay.move({ x: 100, y: 100 });
+    expect(chip.style.transform).toBe('translate3d(114px, 118px, 0)');
+  });
+
+  it('flips left when cursor is near the right edge', () => {
+    const chip = makeReady({ w: 200, h: 60 });
+    Object.defineProperty(window, 'innerWidth',  { value: 1200, configurable: true });
+    Object.defineProperty(window, 'innerHeight', { value:  800, configurable: true });
+
+    overlay.move({ x: 1190, y: 100 });
+    expect(chip.style.transform).toBe('translate3d(976px, 118px, 0)');
+  });
+
+  it('flips up when cursor is near the bottom edge', () => {
+    const chip = makeReady({ w: 180, h: 80 });
+    Object.defineProperty(window, 'innerWidth',  { value: 1200, configurable: true });
+    Object.defineProperty(window, 'innerHeight', { value:  800, configurable: true });
+
+    overlay.move({ x: 100, y: 790 });
+    // y = 790 - 80 (h) - 18 (offsetY) = 692
+    expect(chip.style.transform).toBe('translate3d(114px, 692px, 0)');
+  });
+
+  it('move() is a no-op when pinned', () => {
+    const chip = makeReady({ w: 180, h: 60 });
+    overlay.move({ x: 100, y: 100 });
+    const before = chip.style.transform;
+    overlay.pin();
+    overlay.move({ x: 500, y: 500 });
+    expect(chip.style.transform).toBe(before);
+  });
+});
