@@ -20,6 +20,11 @@
   --amber-fg:        #7a4a1d;
   /* Text color used ON the amber-500 fill (e.g. fallback badge label) */
   --amber-fg-on-amber: #0f0f10;
+  /* Pressed-state bg for segmented controls. In light mode the track is
+     bg-subtle and active "lifts" to bg (white). In dark mode bg is the
+     DARKEST layer, so active must rise above the track instead — see the
+     dark override below. */
+  --toggle-active-bg: var(--bg);
 
   --t-xs:   10px; --lh-xs: 14px;
   --t-sm:   11px; --lh-sm: 16px;
@@ -55,6 +60,7 @@
   --amber-border:    #574014;
   --amber-fg:        #f5d089;
   --amber-fg-on-amber: #1a1100;
+  --toggle-active-bg: var(--border-strong);
   --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
@@ -75,6 +81,7 @@
     --amber-border:    #574014;
     --amber-fg:        #f5d089;
     --amber-fg-on-amber: #1a1100;
+    --toggle-active-bg: var(--border-strong);
     --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
   }
 }
