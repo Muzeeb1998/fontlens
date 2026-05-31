@@ -204,4 +204,51 @@ export class Overlay {
     if (!this._chip || this._chip.style.display === 'none') return;
     this._position(cursor);
   }
+
+  // ---------- mode ----------
+
+  setMode(mode) {
+    if (mode !== 'hover' && mode !== 'inspect') return;
+    this._mode = mode;
+    if (mode === 'hover' && this._outline) {
+      this._outline.style.display = 'none';
+    }
+  }
+
+  getMode() { return this._mode; }
+
+  // ---------- outline ----------
+
+  highlight(el) {
+    if (!this._outline || !el) return;
+    const r = el.getBoundingClientRect();
+    this._outline.style.display = 'block';
+    this._outline.style.width  = `${Math.round(r.width)}px`;
+    this._outline.style.height = `${Math.round(r.height)}px`;
+    this._outline.style.transform = `translate3d(${Math.round(r.left)}px, ${Math.round(r.top)}px, 0)`;
+  }
+
+  // ---------- input ----------
+
+  handleClick(el, ev) {
+    if (ev && typeof ev.preventDefault === 'function')  ev.preventDefault();
+    if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+
+    if (this._mode === 'inspect') {
+      this._onEmit({ kind: 'inspect-click', target: el });
+      return;
+    }
+
+    const detail = this._lastDetail?.detail || this._detect(el);
+    this.pin();
+    this._onEmit({ kind: 'hover-click', target: el, detail });
+  }
+
+  handleKey(ev) {
+    if (!ev) return;
+    if (ev.key === 'Escape') {
+      if (this._pinned) { this.unpin(); return; }
+      if (this._mode === 'inspect') { this.setMode('hover'); return; }
+    }
+  }
 }
