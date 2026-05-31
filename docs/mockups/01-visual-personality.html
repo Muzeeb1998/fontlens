@@ -1,0 +1,163 @@
+<h2>FontLens — visual personality</h2>
+<p class="subtitle">Same product, three feels. Each card shows the hover chip (left) and a side-panel card (right). Click to pick.</p>
+
+<style>
+  .fl-card-image { padding: 0; }
+  .fl-stage {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 16px;
+    padding: 20px;
+    align-items: center;
+    min-height: 220px;
+  }
+  .fl-chip {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    display: inline-flex; flex-direction: column; gap: 4px;
+    min-width: 180px;
+  }
+  .fl-panel {
+    border-radius: 10px;
+    padding: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+  }
+  .fl-pname { font-weight: 600; font-size: 14px; }
+  .fl-meta { opacity: .65; font-size: 11px; }
+  .fl-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .fl-row { display: flex; align-items: center; gap: 8px; }
+  .fl-btns { display: flex; gap: 6px; margin-top: 10px; }
+  .fl-btn {
+    border-radius: 6px; padding: 4px 8px; font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* A — Minimal mono */
+  .a-stage  { background: #fafafa; }
+  .a-chip   { background: #0f0f10; color: #fff; }
+  .a-amber  { background: #f59e0b; }
+  .a-panel  { background: #fff; border: 1px solid #ececec; }
+  .a-name   { color: #0f0f10; }
+  .a-spec   { font: 600 28px/1.1 Georgia, "Times New Roman", serif; color: #0f0f10; margin: 4px 0 8px; }
+  .a-btn    { background: #f3f3f3; color: #0f0f10; border: 1px solid #e4e4e4; }
+
+  /* B — Designer warm */
+  .b-stage  { background: linear-gradient(180deg,#fbf7f2,#f5ece1); }
+  .b-chip   { background: #1f1a17; color: #fff7ec; border: 1px solid #2a2420; }
+  .b-amber  { background: #e9883a; }
+  .b-panel  { background: #fff; border: 1px solid #efe5d6; box-shadow: 0 1px 0 #efe5d6; }
+  .b-name   { color: #2a1f17; font-family: "Iowan Old Style", Georgia, serif; }
+  .b-spec   { font: 500 30px/1.05 "Iowan Old Style", Georgia, serif; color: #2a1f17; margin: 4px 0 8px; letter-spacing: -0.01em; }
+  .b-btn    { background: #fff3e3; color: #7a4a1d; border: 1px solid #f0dcbd; }
+
+  /* C — DevTools */
+  .c-stage  { background: #1b1d22; }
+  .c-chip   { background: #2a2d35; color: #e6e6e6; border: 1px solid #3a3e48; font-family: ui-monospace, Menlo, monospace; }
+  .c-amber  { background: #f0b429; }
+  .c-panel  { background: #23262d; border: 1px solid #353944; color: #e6e6e6; font-family: ui-monospace, Menlo, monospace; }
+  .c-name   { color: #9ecbff; font-family: ui-monospace, Menlo, monospace; }
+  .c-spec   { font: 600 24px/1.1 system-ui; color: #fff; margin: 4px 0 8px; }
+  .c-btn    { background: #2f3340; color: #9ecbff; border: 1px solid #404654; }
+  .c-meta-c { color: #8a93a3; }
+</style>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="fl-stage a-stage">
+        <div class="fl-chip a-chip">
+          <div class="fl-row">
+            <span class="fl-dot a-amber"></span>
+            <span style="font-weight:600">Arial</span>
+            <span style="opacity:.55;font-size:10px;margin-left:auto">fallback</span>
+          </div>
+          <div class="fl-meta">requested: Söhne</div>
+          <div class="fl-meta">16px · 400 · 24/16</div>
+        </div>
+        <div class="fl-panel a-panel">
+          <div class="fl-pname a-name">Söhne — Body</div>
+          <div class="fl-meta">Self-hosted · woff2 · used 142×</div>
+          <div class="a-spec">Almost before we knew it</div>
+          <div class="fl-meta">16px / 400 / 24px / -0.01em</div>
+          <div class="fl-btns">
+            <span class="fl-btn a-btn">CSS</span>
+            <span class="fl-btn a-btn">Tailwind</span>
+            <span class="fl-btn a-btn">Token</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Minimal Mono</h3>
+      <p>Linear/Vercel feel. Mostly grayscale, one amber accent for the fallback signal. Trusts the type to do the talking.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="fl-stage b-stage">
+        <div class="fl-chip b-chip">
+          <div class="fl-row">
+            <span class="fl-dot b-amber"></span>
+            <span style="font-weight:600">Arial</span>
+            <span style="opacity:.6;font-size:10px;margin-left:auto">fallback</span>
+          </div>
+          <div class="fl-meta">requested: Söhne</div>
+          <div class="fl-meta">16px · 400 · 24/16</div>
+        </div>
+        <div class="fl-panel b-panel">
+          <div class="fl-pname b-name">Söhne — Body</div>
+          <div class="fl-meta">Self-hosted · woff2 · used 142×</div>
+          <div class="b-spec">Almost before we knew it</div>
+          <div class="fl-meta">16px / 400 / 24px / -0.01em</div>
+          <div class="fl-btns">
+            <span class="fl-btn b-btn">CSS</span>
+            <span class="fl-btn b-btn">Tailwind</span>
+            <span class="fl-btn b-btn">Token</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Designer Warm</h3>
+      <p>Editorial. Cream paper background, serif specimens, soft borders. Feels like a type catalog, not a tool. Strong Figma-user appeal.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="fl-stage c-stage">
+        <div class="fl-chip c-chip">
+          <div class="fl-row">
+            <span class="fl-dot c-amber"></span>
+            <span style="font-weight:600">Arial</span>
+            <span class="c-meta-c" style="font-size:10px;margin-left:auto">fallback</span>
+          </div>
+          <div class="fl-meta c-meta-c">req: "Söhne"</div>
+          <div class="fl-meta c-meta-c">16px / 400 / 24px</div>
+        </div>
+        <div class="fl-panel c-panel">
+          <div class="fl-pname c-name">Söhne</div>
+          <div class="fl-meta c-meta-c">@font-face · woff2 · 142 nodes</div>
+          <div class="c-spec">Almost before we knew it</div>
+          <div class="fl-meta c-meta-c">size:16 weight:400 lh:24 ls:-0.01em</div>
+          <div class="fl-btns">
+            <span class="fl-btn c-btn">.css</span>
+            <span class="fl-btn c-btn">.tw</span>
+            <span class="fl-btn c-btn">.json</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — DevTools Dark</h3>
+      <p>Chrome devtools-adjacent. Dense, mono UI, dark by default. Reads as "tool", not "product". Strong dev appeal, weaker designer pull.</p>
+    </div>
+  </div>
+
+</div>
