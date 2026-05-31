@@ -2,6 +2,23 @@
 
 import { Overlay } from './overlay.js';
 
+// Closed-shadow marker (Phase 5 §4): patch attachShadow so when a closed
+// shadow root is created we flag its host element. extractor-shadow.js reads
+// the flag to surface a footnote. Patch must run before page scripts.
+(function installClosedShadowMarker() {
+  if (typeof window === 'undefined') return;
+  if (window.__fontlensClosedShadowMarkerInstalled) return;
+  window.__fontlensClosedShadowMarkerInstalled = true;
+  try {
+    const orig = Element.prototype.attachShadow;
+    Element.prototype.attachShadow = function (init) {
+      const sh = orig.apply(this, arguments);
+      if (init && init.mode === 'closed') this.__fontlensClosedShadow = true;
+      return sh;
+    };
+  } catch { /* frozen prototype — closedCount stays 0, which is honest */ }
+})();
+
 function findTextElement(start) {
   let el = start;
   while (el && el.nodeType === 1) {
