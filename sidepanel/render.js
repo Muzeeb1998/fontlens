@@ -72,6 +72,41 @@ export function renderTruncated(regionEl, totalNodes) {
   regionEl.appendChild(note);
 }
 
+function renderPlaceholderCard(regionEl, n) {
+  const card = document.createElement('section');
+  card.className = 'fl-card fl-placeholder';
+  card.setAttribute('role', 'note');
+  card.setAttribute('aria-live', 'polite');
+  const head = document.createElement('div');
+  head.className = 'fl-card-head';
+  const name = document.createElement('span');
+  name.className = 'fl-card-name';
+  name.textContent = `${n} frame${n === 1 ? '' : 's'} couldn't be inspected (cross-origin)`;
+  head.appendChild(name);
+  card.appendChild(head);
+  regionEl.appendChild(card);
+}
+
+function renderFootnotes(regionEl, footnotes) {
+  const lines = [];
+  if (footnotes.truncated) {
+    lines.push('Showing styles from the first 5000 text nodes.');
+  }
+  if (footnotes.closedShadows > 0) {
+    const n = footnotes.closedShadows;
+    lines.push(`${n} node${n === 1 ? '' : 's'} in closed shadow tree${n === 1 ? '' : 's'} were skipped.`);
+  }
+  if (!lines.length) return;
+  const aside = document.createElement('aside');
+  aside.className = 'fl-footnotes';
+  for (const line of lines) {
+    const p = document.createElement('p');
+    p.textContent = line;
+    aside.appendChild(p);
+  }
+  regionEl.appendChild(aside);
+}
+
 // ---------------- Cards + rows ----------------
 
 function ariaLabelForRow(row) {
@@ -255,7 +290,10 @@ function buildAxesBlock(group) {
 export function renderGroups(regionEl, payload, callbacks = {}) {
   regionEl.innerHTML = '';
 
-  if (!payload.groups.length) {
+  const footnotes = payload.footnotes || {};
+  const blockedFrames = footnotes.blockedFrames || 0;
+
+  if (!payload.groups.length && blockedFrames === 0) {
     renderEmpty(regionEl);
     return;
   }
@@ -287,7 +325,9 @@ export function renderGroups(regionEl, payload, callbacks = {}) {
     regionEl.appendChild(card);
   }
 
+  if (blockedFrames > 0) renderPlaceholderCard(regionEl, blockedFrames);
   if (payload.truncated) renderTruncated(regionEl, payload.totalNodes);
+  if (footnotes.truncated || footnotes.closedShadows) renderFootnotes(regionEl, footnotes);
 }
 
 // ---------------- Keyboard helpers ----------------

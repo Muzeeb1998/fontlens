@@ -212,6 +212,21 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   font-style: italic;
 }
 
+.fl-placeholder {
+  background: var(--bg-muted);
+  color: var(--fg-muted);
+}
+.fl-placeholder .fl-card-name { font-weight: 500; font-size: var(--t-sm); }
+
+.fl-footnotes {
+  padding: var(--s-3) var(--s-6) var(--s-7);
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: var(--t-sm);
+}
+.fl-footnotes p { margin: 0 0 var(--s-1); }
+.fl-footnotes p:last-child { margin-bottom: 0; }
+
 /* ===== Copy buttons ===== */
 .fl-copy {
   display: none;
