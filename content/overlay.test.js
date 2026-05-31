@@ -87,3 +87,79 @@ describe('Overlay — mount/unmount', () => {
     expect(chip.style.display).toBe('none');
   });
 });
+
+describe('Overlay — chip render', () => {
+  function mountWith(detectResult) {
+    const det = vi.fn(() => detectResult);
+    overlay = new Overlay({ detect: det, onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 100, y: 100 });
+    return overlay._chip;
+  }
+
+  const baseDetail = (overrides = {}) => ({
+    requested: ['Inter', 'sans-serif'],
+    rendered: 'Inter',
+    isFallback: false,
+    source: { type: 'self-hosted', format: 'woff2', url: null, os: null },
+    isVariable: false, axes: null,
+    metrics: { size: '16px', weight: 400, lineHeight: '24px', letterSpacing: 'normal', transform: 'none', color: { rgb: 'rgb(0,0,0)', hex: '#000000' } },
+    confidence: 'high',
+    ...overrides,
+  });
+
+  it('renders rendered face on line 1 (bold)', () => {
+    const chip = mountWith(baseDetail());
+    expect(chip.style.display).not.toBe('none');
+    expect(chip.querySelector('.line1').textContent).toBe('Inter');
+  });
+
+  it('renders metrics line 2 as size · weight · lh/size', () => {
+    const chip = mountWith(baseDetail());
+    expect(chip.querySelector('.line2').textContent).toBe('16px · 400 · 24/16');
+  });
+
+  it('shows amber dot + fallback + requested rows when isFallback', () => {
+    const chip = mountWith(baseDetail({
+      requested: ['Söhne', 'Arial', 'sans-serif'],
+      rendered: 'Arial', isFallback: true,
+      source: { type: 'system', format: null, url: null, os: null },
+    }));
+    expect(chip.querySelector('.dot')).toBeTruthy();
+    expect(chip.querySelector('.fallback').textContent).toContain('fallback');
+    expect(chip.querySelector('.requested').textContent).toBe('requested: Söhne');
+  });
+
+  it('hides fallback rows when isFallback is false', () => {
+    const chip = mountWith(baseDetail());
+    expect(chip.querySelector('.fallback')).toBeNull();
+    expect(chip.querySelector('.requested')).toBeNull();
+  });
+
+  it('shows low-confidence row when confidence === "low"', () => {
+    const chip = mountWith(baseDetail({ confidence: 'low' }));
+    expect(chip.querySelector('.lowconf').textContent).toContain("couldn't confirm");
+  });
+
+  it('renders an em dash when rendered is null', () => {
+    const chip = mountWith(baseDetail({
+      requested: ['Mystery'], rendered: null,
+      source: { type: 'system', format: null, url: null, os: 'unknown' },
+      confidence: 'low',
+    }));
+    expect(chip.querySelector('.line1').textContent).toBe('—');
+  });
+
+  it('hide() hides the chip and clears state', () => {
+    const chip = mountWith(baseDetail());
+    overlay.hide();
+    expect(chip.style.display).toBe('none');
+  });
+
+  it('does not hide the chip when pinned', () => {
+    const chip = mountWith(baseDetail());
+    overlay.pin();
+    overlay.hide();
+    expect(chip.style.display).not.toBe('none');
+  });
+});

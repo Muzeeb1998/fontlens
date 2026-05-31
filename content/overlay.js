@@ -79,4 +79,109 @@ export class Overlay {
     this._pinned = false;
     this._lastDetail = null;
   }
+
+  // ---------- render helpers ----------
+
+  _stripPx(v) {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  _formatMetrics(m) {
+    const size = m.size;
+    const weight = String(m.weight);
+    const sizePx = this._stripPx(m.size);
+    const lhPx   = this._stripPx(m.lineHeight);
+    const lhPart = (sizePx != null && lhPx != null)
+      ? `${Math.round(lhPx)}/${Math.round(sizePx)}`
+      : (m.lineHeight === 'normal' ? 'normal' : m.lineHeight);
+    return `${size} · ${weight} · ${lhPart}`;
+  }
+
+  _renderChip(detail) {
+    if (!this._chip) return;
+    const chip = this._chip;
+    chip.replaceChildren();
+    chip.style.display = 'block';
+
+    const line1 = document.createElement('div');
+    line1.className = 'line1';
+    line1.textContent = detail.rendered || '—';
+    chip.appendChild(line1);
+
+    const line2 = document.createElement('div');
+    line2.className = 'line2';
+    line2.textContent = this._formatMetrics(detail.metrics);
+    chip.appendChild(line2);
+
+    if (detail.isFallback) {
+      const fb = document.createElement('div');
+      fb.className = 'fallback';
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      fb.appendChild(dot);
+      const txt = document.createElement('span');
+      txt.textContent = 'fallback';
+      fb.appendChild(txt);
+      chip.appendChild(fb);
+
+      const requested = detail.requested[0] || '';
+      if (requested) {
+        const r = document.createElement('div');
+        r.className = 'requested';
+        r.textContent = `requested: ${requested}`;
+        chip.appendChild(r);
+      }
+    }
+
+    if (detail.confidence === 'low') {
+      const lc = document.createElement('div');
+      lc.className = 'lowconf';
+      lc.textContent = "couldn't confirm rendering";
+      chip.appendChild(lc);
+    }
+  }
+
+  // ---------- show / hide / pin ----------
+
+  show(el, cursor) {
+    if (!this._host) this.mount();
+    if (this._pinned) return;
+    const detail = this._detect(el);
+    this._lastDetail = { detail, el, cursor };
+    this._renderChip(detail);
+    this._position(cursor);
+  }
+
+  hide() {
+    if (this._pinned) return;
+    if (!this._chip) return;
+    this._chip.style.display = 'none';
+  }
+
+  pin() {
+    if (!this._lastDetail) return;
+    this._pinned = true;
+    if (this._host)  this._host.setAttribute('data-pinned', 'true');
+    if (this._chip)  this._chip.setAttribute('data-pinned', 'true');
+  }
+
+  unpin() {
+    this._pinned = false;
+    if (this._host)  this._host.removeAttribute('data-pinned');
+    if (this._chip)  this._chip.removeAttribute('data-pinned');
+  }
+
+  isPinned() { return this._pinned; }
+
+  // ---------- positioning ----------
+
+  _position(cursor) {
+    if (!this._chip || !cursor) return;
+    const offsetX = 14;
+    const offsetY = 18;
+    const x = Math.round(cursor.x + offsetX);
+    const y = Math.round(cursor.y + offsetY);
+    this._chip.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  }
 }
