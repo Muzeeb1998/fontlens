@@ -1,0 +1,219 @@
+@import url('../lib/tokens.css');
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: var(--t-base);
+  line-height: var(--lh-base);
+}
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+
+/* ===== Header (DESIGN.md §6.2) ===== */
+.fl-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-5) var(--s-6);
+  border-bottom: 1px solid var(--border);
+}
+.fl-wordmark {
+  font-weight: 600;
+  font-size: var(--t-md);
+  letter-spacing: -0.01em;
+}
+
+/* ===== Mode toggle (DESIGN.md §6.8) ===== */
+.fl-mode {
+  justify-self: center;
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border-radius: 6px;
+  padding: 2px;
+}
+.fl-mode button {
+  font-size: var(--t-sm);
+  padding: var(--s-1) var(--s-3);
+  border-radius: 4px;
+  color: var(--fg-muted);
+}
+.fl-mode button[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* ===== Theme toggle ===== */
+.fl-theme {
+  justify-self: end;
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border-radius: 6px;
+  padding: 2px;
+}
+.fl-theme button {
+  font-size: var(--t-xs);
+  padding: var(--s-1) var(--s-2);
+  border-radius: 4px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fl-theme button[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* ===== Fallback banner (DESIGN.md §6.3) ===== */
+.fl-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-6);
+  background: var(--amber-bg);
+  color: var(--amber-fg);
+  border-bottom: 1px solid var(--amber-border);
+  font-size: var(--t-sm);
+}
+.fl-banner-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: var(--amber-500);
+  flex: 0 0 auto;
+}
+.fl-banner[hidden] { display: none; }
+
+/* ===== Summary ===== */
+.fl-summary {
+  padding: var(--s-4) var(--s-6);
+  color: var(--fg-muted);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Region ===== */
+.fl-region {
+  padding: 0 var(--s-6) var(--s-8);
+}
+
+/* ===== Family card (DESIGN.md §6.4) ===== */
+.fl-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  margin: var(--s-3) 0;
+  overflow: hidden;
+}
+.fl-card.is-fallback {
+  border-color: var(--amber-border);
+  background: var(--amber-bg);
+}
+
+.fl-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-5);
+  border-bottom: 1px solid var(--border);
+}
+.fl-card.is-fallback .fl-card-head { border-bottom-color: var(--amber-border); }
+.fl-card-name {
+  font-weight: 600;
+  font-size: var(--t-md);
+  color: var(--fg);
+}
+.fl-card.is-fallback .fl-card-name { color: var(--amber-fg); }
+.fl-card-meta {
+  font-family: var(--font-mono);
+  font-size: var(--t-sm);
+  color: var(--fg-muted);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Badge (DESIGN.md §6.6) ===== */
+.fl-badge {
+  display: inline-block;
+  padding: 2px var(--s-2);
+  font-size: var(--t-xs);
+  line-height: var(--lh-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+.fl-badge.is-fallback { background: var(--amber-500); color: #0f0f10; }
+.fl-badge.is-variable { background: var(--bg-subtle); color: var(--fg); }
+
+/* ===== Style row (DESIGN.md §6.5) ===== */
+.fl-row {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+  outline: none;
+}
+.fl-row:last-child { border-bottom: 0; }
+.fl-row:hover,
+.fl-row:focus-visible { background: var(--bg-muted); }
+.fl-row:focus-visible { box-shadow: inset 0 0 0 2px var(--border-strong); }
+
+.fl-row-role {
+  font-size: var(--t-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+.fl-row-specimen {
+  font-size: var(--t-xl);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fl-row-metrics {
+  font-family: var(--font-mono);
+  font-size: var(--t-sm);
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+.fl-row-count {
+  padding: 2px var(--s-2);
+  font-size: var(--t-xs);
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Empty / truncated ===== */
+.fl-empty {
+  padding: var(--s-8) var(--s-6);
+  color: var(--fg-muted);
+  text-align: center;
+  font-size: var(--t-sm);
+}
+.fl-truncated {
+  padding: var(--s-3) var(--s-6);
+  color: var(--fg-faint);
+  font-size: var(--t-xs);
+  font-style: italic;
+}
+
+/* ===== Motion ===== */
+.fl-row { transition: background 120ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .fl-row { transition: none; }
+}
