@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "FontLens — Font Inspector & Fallback Detector",
+  "version": "1.0.0",
+  "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
+  "background": { "service_worker": "service-worker.js" },
+  "side_panel": { "default_path": "sidepanel/panel.html" },
+  "action": { "default_title": "Inspect fonts" },
+  "commands": {
+    "toggle-inspect": {
+      "suggested_key": { "default": "Alt+Shift+F" },
+      "description": "Toggle font inspector"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": { "16": "assets/icons/16.png", "48": "assets/icons/48.png", "128": "assets/icons/128.png" },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/*.js", "lib/*.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
