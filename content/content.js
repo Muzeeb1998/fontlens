@@ -41,7 +41,15 @@ function defaultMessaging() {
     },
     sendMessage(msg) {
       if (!hasChrome) return;
-      try { chrome.runtime.sendMessage(msg); } catch { /* SW asleep */ }
+      // sendMessage returns a Promise that rejects with
+      // "Could not establish connection. Receiving end does not exist."
+      // whenever no listener is currently attached (panel closed, SW asleep,
+      // demo page boot-up race). All our sends are fire-and-forget, so we
+      // swallow both sync throws and async rejections.
+      try {
+        const p = chrome.runtime.sendMessage(msg);
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch { /* no listeners */ }
     },
   };
 }

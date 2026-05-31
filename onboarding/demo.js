@@ -1,7 +1,12 @@
 // 1. Ask the side panel (via the SW) to enter Hover mode for this tab.
+// sendMessage returns a rejecting promise when no listener exists (e.g. the
+// side panel isn't open yet). Swallow both sync and async failure paths so
+// the user never sees "Could not establish connection" in the extensions
+// Errors panel.
 try {
   if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    chrome.runtime.sendMessage({ type: 'fontlens:set-mode', mode: 'hover' });
+    const p = chrome.runtime.sendMessage({ type: 'fontlens:set-mode', mode: 'hover' });
+    if (p && typeof p.catch === 'function') p.catch(() => {});
   }
 } catch { /* no-op when loaded outside the extension */ }
 
