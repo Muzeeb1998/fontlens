@@ -268,18 +268,21 @@ export class ContentScript {
       return;
     }
     if (evt.kind === 'inspect-click') {
-      // Run extract scoped to the clicked element so the panel shows just it.
+      // 150ms debounce so rapid clicks coalesce to one extract (spec §11).
       if (!this._extract || !evt.target) return;
-      try {
-        this._nodeMap.clear();
-        const out = this._extract(evt.target, {
-          nodeMap: this._nodeMap,
-          hostname: location.hostname,
-        });
-        this._messaging.sendMessage({ type: 'fontlens:extract-result', payload: out });
-      } catch (e) {
-        console.error('[FontLens] inspect-click extract failed:', e);
-      }
+      clearTimeout(this._extractTimer);
+      this._extractTimer = setTimeout(() => {
+        try {
+          this._nodeMap.clear();
+          const out = this._extract(evt.target, {
+            nodeMap: this._nodeMap,
+            hostname: location.hostname,
+          });
+          this._messaging.sendMessage({ type: 'fontlens:extract-result', payload: out });
+        } catch (e) {
+          console.error('[FontLens] inspect-click extract failed:', e);
+        }
+      }, 150);
     }
   }
 }

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FontLens Options</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 520px; margin: 32px auto; padding: 0 24px; color: #0f0f10; }
+    h1 { font-size: 18px; margin-bottom: 24px; }
+    fieldset { border: 1px solid #ececec; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+    legend { font-weight: 600; padding: 0 6px; }
+    label { display: block; padding: 4px 0; cursor: pointer; }
+    label input { margin-right: 8px; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0e0e10; color: #f5f5f7; }
+      fieldset { border-color: #26262a; }
+    }
+  </style>
+</head>
+<body>
+  <h1>FontLens — Options</h1>
+
+  <fieldset>
+    <legend>Default copy format</legend>
+    <label><input type="radio" name="defaultFormat" value="css"> CSS</label>
+    <label><input type="radio" name="defaultFormat" value="tailwind"> Tailwind</label>
+    <label><input type="radio" name="defaultFormat" value="token"> Design Token (JSON)</label>
+  </fieldset>
+
+  <script src="options.js"></script>
+</body>
+</html>
