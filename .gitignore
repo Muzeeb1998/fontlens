@@ -5,3 +5,9 @@ dist/
 *.log
 .env
 .env.*
+
+# Test-harness font binaries — engineer downloads these locally.
+test/harness/fonts/*.woff2
+test/harness/fonts/*.woff
+test/harness/fonts/*.ttf
+!test/harness/fonts/.gitkeep

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FontLens Detection Harness</title>
+  <link rel="stylesheet" href="./fixtures.css">
+</head>
+<body>
+  <h1>FontLens — Detection Harness</h1>
+  <p>Run: <code>npm run harness</code> then visit <code>http://localhost:5173/</code>.</p>
+  <p>Fixture 1 requires Inter Regular at <code>test/harness/fonts/inter-400.woff2</code> (download from <code>https://github.com/rsms/inter/releases</code>). If absent, fixture 1 will fail — that's the engine correctly noticing the missing font.</p>
+
+  <section class="fixture" id="fx-present">
+    <h2>1. Present face (HarnessReal) — should detect HarnessReal, no fallback</h2>
+    <script type="application/json" class="expect">
+    { "rendered": "HarnessReal", "isFallback": false }
+    </script>
+    <div class="subject" style="font-family: 'HarnessReal', sans-serif">The quick brown fox</div>
+    <pre class="report"></pre>
+  </section>
+
+  <section class="fixture" id="fx-fallback">
+    <h2>2. Missing face (HarnessMissing) — should detect a fallback</h2>
+    <script type="application/json" class="expect">
+    { "rendered_not": "HarnessMissing", "isFallback": true }
+    </script>
+    <div class="subject" style="font-family: 'HarnessMissing', Arial, sans-serif">The quick brown fox</div>
+    <pre class="report"></pre>
+  </section>
+
+  <section class="fixture" id="fx-system">
+    <h2>3. System stack — should label source as system</h2>
+    <script type="application/json" class="expect">
+    { "source_type": "system" }
+    </script>
+    <div class="subject" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">The quick brown fox</div>
+    <pre class="report"></pre>
+  </section>
+
+  <section class="fixture" id="fx-generic-only">
+    <h2>4. Only a generic keyword — should not flag fallback</h2>
+    <script type="application/json" class="expect">
+    { "isFallback": false }
+    </script>
+    <div class="subject" style="font-family: serif">The quick brown fox</div>
+    <pre class="report"></pre>
+  </section>
+
+  <script type="module" src="./harness.js"></script>
+</body>
+</html>
