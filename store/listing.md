@@ -1,0 +1,141 @@
+# FontLens — Chrome Web Store listing copy
+
+Paste verbatim into https://chrome.google.com/webstore/devconsole on the
+Store Listing tab. Character counts validated against Chrome's 2026 limits.
+
+---
+
+## Name (≤ 75 chars)
+
+FontLens — Font Inspector & Fallback Detector
+
+(48 chars)
+
+---
+
+## Short description (≤ 132 chars — shown in search results)
+
+See the font the page asked for and the font visitors actually render. Copy as CSS, Tailwind, or design token. Local-only.
+
+(131 chars)
+
+---
+
+## Category
+
+Developer Tools (primary)
+
+---
+
+## Language
+
+English (United States)
+
+---
+
+## Long description (≤ 16,000 chars)
+
+FontLens shows you what no other font inspector will: when a site asks for one font and visitors see another.
+
+Most font tools just read the CSS. FontLens reads the CSS *and* checks what the browser actually rendered. If "Söhne" failed to load and visitors are seeing Arial, FontLens flags it with an amber dot. That's the one thing that matters and the one thing no one else gets right.
+
+WHAT IT DOES
+
+• Hover any element to see the rendered font, weight, size, line-height, and color in a small floating chip.
+• Spot fallbacks instantly — an amber dot appears on the chip whenever the requested font isn't loading.
+• Click an element to extract every distinct type style on the page, grouped by font family, sorted by usage.
+• Copy any style as CSS, Tailwind classes, or a design token with one click.
+• See the full picture: a page-level banner tells you when any font on the page is falling back.
+• Audition variable font axes — sliders let you preview weight, width, optical size live on the page.
+
+WHO IT IS FOR
+
+• Designers handing off type to engineers and wanting a clean token export.
+• Frontend developers debugging why a custom font isn't showing up in production.
+• Anyone auditing a marketing site for typography drift.
+
+PRIVACY
+
+All processing happens inside your browser. FontLens never sends a network request, never loads remote code, never includes analytics. The extension permission list is the minimum Chrome requires for a tab-inspection tool: activeTab, scripting, sidePanel, storage. No host_permissions. No background data collection. No telemetry.
+
+If you don't trust the description, you don't have to — the source is open and the bundle ships only what you can read.
+
+HOW TO USE IT
+
+1. Click the FontLens icon in your toolbar, or press Alt+Shift+F on any page.
+2. The side panel opens. Hover any element to inspect it.
+3. Click an element to extract every type style on the page.
+4. Hover a row in the side panel to reveal copy buttons. One click and the style is on your clipboard.
+
+WHAT'S NEXT
+
+Free font alternatives and Figma export are on the roadmap. There's a notify-me button in the side panel footer — opt in only if you want to be told when they ship.
+
+SUPPORT
+
+File issues at the GitHub repository linked in the support URL field. No telemetry, no email harvesting, no surprises.
+
+---
+
+## Support URL
+
+https://github.com/Muzeeb1998/fontlens/issues
+
+---
+
+## Single-purpose statement (required)
+
+FontLens inspects the typography of the current web page and copies styles as
+CSS, Tailwind, or design tokens. It does not modify pages persistently, does
+not collect data, and does not communicate with any remote server.
+
+---
+
+## Permission justifications (≤ 1000 chars each)
+
+### activeTab
+Used to inspect the currently-focused tab when the user clicks the FontLens
+toolbar icon or presses the keyboard shortcut. No background access. Scope is
+the user-initiated tab only.
+
+### scripting
+Used to inject the FontLens content script and Shadow-DOM overlay into the
+current tab on user action. Required to read computed styles and render the
+hover chip. No remote code is loaded; all scripts ship inside the extension.
+
+### sidePanel
+Used to open the FontLens side panel, which displays the extracted type
+system. The Side Panel API is preferred over a popup because the panel must
+persist across page clicks while the user inspects elements.
+
+### storage
+Used to persist the user's theme preference (auto/light/dark) and default copy
+format (CSS/Tailwind/Token). Stored in chrome.storage.local — never
+transmitted.
+
+---
+
+## Promotional images (optional for Launch 1)
+
+• Small promo tile: 440×280 — not produced for Launch 1.
+• Marquee: 1400×560 — not produced for Launch 1.
+
+---
+
+## Screenshots (required, 1–5)
+
+Five 1280×800 PNG screenshots in `store/screenshots/`:
+
+1. `1-hero-fallback.png` — hover chip with amber fallback dot on a real article.
+2. `2-side-panel.png` — hybrid layout, multiple family cards, one fallback card.
+3. `3-tailwind-toast.png` — Tailwind copy with toast confirmation.
+4. `4-variable-axis.png` — variable font slider mid-drag.
+5. `5-fallback-banner.png` — page-level fallback banner.
+
+Upload in this order.
+
+---
+
+## Version (must match manifest.json)
+
+1.0.0

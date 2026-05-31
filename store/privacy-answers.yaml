@@ -1,0 +1,58 @@
+# Chrome Web Store — Privacy Practices questionnaire.
+# Paste each value into the matching dashboard field at submission time.
+
+single_purpose: |
+  Inspect the typography of the current web page and copy styles
+  as CSS, Tailwind, or design tokens. No data leaves the browser.
+
+permission_justifications:
+  activeTab: |
+    Required to read computed styles from the user's currently focused tab.
+    Scope: only the tab the user explicitly invokes the extension on.
+  scripting: |
+    Required to inject the FontLens content script and Shadow-DOM overlay
+    into the active tab on toolbar click. No remote scripts are loaded.
+  sidePanel: |
+    The Side Panel API hosts the type-system extractor. A popup would close
+    on every page click and breaks the inspect workflow.
+  storage: |
+    Persists the user's theme preference (auto/light/dark) and default copy
+    format. Stored in chrome.storage.local. Never transmitted off-device.
+
+remote_code:
+  uses_remote_code: false
+  justification: |
+    The extension ships every script inside the bundle. The audit script in
+    build/audit-bundle.js verifies no remote <script src>, no eval, no
+    new Function, no dynamic import of HTTP URLs.
+
+data_collection_use:
+  collects_personally_identifiable_info: false
+  collects_health_info: false
+  collects_financial_info: false
+  collects_authentication_info: false
+  collects_personal_communications: false
+  collects_location: false
+  collects_web_history: false
+  collects_user_activity: false
+  collects_website_content: false
+  notes: |
+    FontLens reads computed styles of the current tab only when the user
+    invokes it. Nothing is stored beyond the user's UI preferences. Nothing
+    is transmitted.
+
+data_usage:
+  uses_data_for_authentication: false
+  uses_data_for_advertising: false
+  uses_data_for_personalization: false
+  uses_data_for_creditworthiness: false
+  notes: |
+    No data leaves the device. No analytics. No marketing.
+
+data_sale:
+  sells_data: false
+
+certifications:
+  i_do_not_sell_user_data: true
+  use_of_data_limited_to_single_purpose: true
+  use_of_data_not_for_creditworthiness_or_lending: true

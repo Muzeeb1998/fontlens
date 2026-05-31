@@ -11,3 +11,5 @@ test/harness/fonts/*.woff2
 test/harness/fonts/*.woff
 test/harness/fonts/*.ttf
 !test/harness/fonts/.gitkeep
+dist/
+store/screenshots/*.png

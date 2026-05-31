@@ -6,10 +6,14 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "harness": "python3 -m http.server 5173 --directory test/harness"
+    "harness": "python3 -m http.server 5173 --directory test/harness",
+    "build:zip": "node build/package.js",
+    "build": "npm run build:zip",
+    "audit:bundle": "node build/audit-bundle.js dist/fontlens-1.0.0.zip"
   },
   "devDependencies": {
     "happy-dom": "^20.9.0",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.7",
+    "archiver": "^7.0.1"
   }
 }
