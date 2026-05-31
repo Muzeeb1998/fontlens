@@ -5,6 +5,7 @@ import {
   renderHeader, renderBanner, renderSummary, renderGroups,
   renderEmpty, focusRow,
 } from './render.js';
+import { toCSS, toTailwind, toTailwindStructured, toToken } from '../lib/export.js';
 
 const state = {
   mode: 'hover',
@@ -18,6 +19,81 @@ const bannerEl   = document.getElementById('fl-banner');
 const bannerText = document.getElementById('fl-banner-text');
 const summaryEl  = document.getElementById('fl-summary');
 const regionEl   = document.getElementById('fl-region');
+const toastEl    = document.getElementById('fl-toast');
+
+// ---------- Copy + Toast ----------
+let defaultFormat = 'css';
+let toastTimer = null;
+
+function showToast(message) {
+  if (!toastEl) return;
+  toastEl.textContent = message;
+  toastEl.removeAttribute('hidden');
+  toastEl.dataset.visible = 'true';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toastEl.dataset.visible = 'false';
+    setTimeout(() => toastEl.setAttribute('hidden', ''), 200);
+  }, 1800);
+}
+
+function serialize(detail, format) {
+  switch (format) {
+    case 'css':      return toCSS(detail);
+    case 'tailwind': return toTailwind(detail);
+    case 'token':    return JSON.stringify(toToken(detail), null, 2);
+    default:         return toCSS(detail);
+  }
+}
+
+async function copyDetail(detail, format) {
+  const text = serialize(detail, format);
+  try {
+    await navigator.clipboard.writeText(text);
+    const label = format === 'css' ? 'CSS' : format === 'tailwind' ? 'Tailwind' : 'Token';
+    showToast(`Copied as ${label}`);
+  } catch (err) {
+    showToast('Copy failed — clipboard blocked');
+    console.error('[FontLens] clipboard write failed', err);
+  }
+}
+
+function annotateApproximateTailwind() {
+  for (const row of regionEl.querySelectorAll('.fl-row[data-detail]')) {
+    let detail;
+    try { detail = JSON.parse(row.dataset.detail); } catch { continue; }
+    const { approximate } = toTailwindStructured(detail);
+    const flag = row.querySelector('[data-copy="tailwind"] .fl-approx');
+    if (flag) flag.hidden = !approximate;
+  }
+}
+
+// Click delegation — copy buttons
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-copy]');
+  if (!btn) return;
+  const row = btn.closest('.fl-row[data-detail]');
+  if (!row) return;
+  let detail;
+  try { detail = JSON.parse(row.dataset.detail); } catch { return; }
+  e.stopPropagation();
+  copyDetail(detail, btn.dataset.copy);
+});
+
+// Default-format from chrome.storage.local (set by Options page — Phase 5)
+if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+  chrome.storage.local.get(['defaultFormat']).then(({ defaultFormat: stored }) => {
+    if (stored === 'css' || stored === 'tailwind' || stored === 'token') {
+      defaultFormat = stored;
+    }
+  }).catch(() => {});
+  chrome.storage.onChanged?.addListener?.((changes, area) => {
+    if (area === 'local' && changes.defaultFormat) {
+      const v = changes.defaultFormat.newValue;
+      if (v === 'css' || v === 'tailwind' || v === 'token') defaultFormat = v;
+    }
+  });
+}
 
 function paint() {
   renderHeader(headerEl, { mode: state.mode, theme: state.theme });
@@ -40,9 +116,10 @@ function paint() {
       sendToContent({ type: 'fontlens:unhighlight', key: row.key });
     },
     onActivate: (row) => {
-      window.dispatchEvent(new CustomEvent('fontlens:activate', { detail: row }));
+      copyDetail(row.detail, defaultFormat);
     },
   });
+  annotateApproximateTailwind();
 }
 
 function applyTheme(theme) {

@@ -40,10 +40,9 @@ export function renderBanner(bannerEl, textEl, { fallbackCount }) {
     return;
   }
   bannerEl.removeAttribute('hidden');
-  const text = fallbackCount === 1
-    ? "1 of this page's fonts isn't loading — visitors see a fallback."
-    : `${fallbackCount} of this page's fonts aren't loading — visitors see fallbacks.`;
-  textEl.textContent = text;
+  const noun = fallbackCount === 1 ? "font isn't" : "fonts aren't";
+  const tail = fallbackCount === 1 ? 'a fallback' : 'fallbacks';
+  textEl.textContent = `⚠ ${fallbackCount} of this page's ${noun} loading — visitors see ${tail}.`;
 }
 
 // ---------------- Summary ----------------
@@ -131,11 +130,25 @@ function buildRow(row, globalIndex) {
   el.setAttribute('tabindex', globalIndex === 0 ? '0' : '-1');
   el.dataset.rowKey = row.key;
   el.dataset.rowIndex = String(globalIndex);
+  // detail JSON — consumed by panel.js copy-button delegation (Phase 4)
+  try { el.dataset.detail = JSON.stringify(row.detail); } catch {}
 
   const roleLabel = document.createElement('div');
   roleLabel.className = 'fl-row-role';
   roleLabel.textContent = row.role.toUpperCase();
   el.appendChild(roleLabel);
+
+  // Low-confidence "?" badge (Phase 4 §7b)
+  if (row.detail?.confidence === 'low') {
+    const lowconf = document.createElement('span');
+    lowconf.className = 'fl-lowconf';
+    lowconf.setAttribute('role', 'img');
+    lowconf.setAttribute('aria-label', "Detection couldn't be confirmed on this page (CSP).");
+    lowconf.setAttribute('title', "Detection couldn't be confirmed on this page (CSP).");
+    lowconf.setAttribute('tabindex', '0');
+    lowconf.textContent = '?';
+    roleLabel.appendChild(lowconf);
+  }
 
   const middle = document.createElement('div');
 
@@ -152,6 +165,26 @@ function buildRow(row, globalIndex) {
   metrics.textContent = metricsLine(row.detail.metrics);
   metrics.setAttribute('aria-hidden', 'true');
   middle.appendChild(metrics);
+
+  // Copy buttons (Phase 4 — revealed on row hover via CSS)
+  const copy = document.createElement('div');
+  copy.className = 'fl-copy';
+  for (const [fmt, label] of [['css', 'CSS'], ['tailwind', 'Tailwind'], ['token', 'Token']]) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.copy = fmt;
+    btn.setAttribute('aria-label', `Copy as ${label}`);
+    btn.textContent = label;
+    if (fmt === 'tailwind') {
+      const approx = document.createElement('span');
+      approx.className = 'fl-approx';
+      approx.textContent = '≈';
+      approx.hidden = true;
+      btn.appendChild(approx);
+    }
+    copy.appendChild(btn);
+  }
+  middle.appendChild(copy);
 
   el.appendChild(middle);
 

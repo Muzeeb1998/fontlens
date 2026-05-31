@@ -51,7 +51,7 @@ describe('renderBanner', () => {
   });
   it('uses singular phrasing when fallbackCount is 1', () => {
     renderBanner(banner, bannerText, { fallbackCount: 1 });
-    expect(bannerText.textContent).toMatch(/1 of this page'?s fonts isn'?t loading/);
+    expect(bannerText.textContent).toMatch(/1 of this page'?s font isn'?t loading/);
   });
 });
 

@@ -212,6 +212,74 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   font-style: italic;
 }
 
+/* ===== Copy buttons ===== */
+.fl-copy {
+  display: none;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+}
+.fl-row:hover .fl-copy,
+.fl-row:focus-visible .fl-copy,
+.fl-row:focus-within .fl-copy { display: flex; }
+.fl-copy button {
+  font: 500 var(--t-xs) / 1 var(--font-mono);
+  padding: var(--s-1) var(--s-2);
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.fl-copy button:hover { background: var(--bg-muted); }
+.fl-copy .fl-approx {
+  margin-left: 4px;
+  color: var(--fg-muted);
+}
+
+/* ===== Low-confidence badge (DESIGN polish, Phase 4 §7b) ===== */
+.fl-lowconf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: var(--s-1);
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--fg-muted);
+  font: 600 10px / 1 var(--font-ui);
+  cursor: help;
+}
+.fl-lowconf:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 2px;
+}
+
+/* ===== Toast (DESIGN.md §6.7) ===== */
+#fl-toast {
+  position: fixed;
+  right: var(--s-6);
+  bottom: var(--s-6);
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  font: var(--t-sm) / 1.4 var(--font-ui);
+  padding: var(--s-3) var(--s-5);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 120ms ease-out, transform 120ms ease-out;
+  pointer-events: none;
+  z-index: 9999;
+}
+#fl-toast[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  #fl-toast { transition: none; }
+}
+
 /* ===== Motion ===== */
 .fl-row { transition: background 120ms ease-out; }
 @media (prefers-reduced-motion: reduce) {
