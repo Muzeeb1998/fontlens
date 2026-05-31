@@ -265,6 +265,14 @@ function bindFocusRehydrate() {
   });
 }
 
+async function ensureContent() {
+  if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+  try {
+    const p = chrome.runtime.sendMessage({ type: 'fontlens:ensure-content' });
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch {}
+}
+
 (async function init() {
   state.theme = await loadTheme();
   applyTheme(state.theme);
@@ -273,5 +281,11 @@ function bindFocusRehydrate() {
   bindMessages();
   bindFocusRehydrate();
   paint();
+  // Two paths to receive the first payload:
+  //   a) If the content script is already loaded (toolbar click ran it),
+  //      this direct tab message gets the extract started.
+  //   b) If the panel opened first (e.g. Chrome's side-panel selector),
+  //      the SW handler injects the loader and re-kicks request-extract.
   sendToContent({ type: 'fontlens:request-extract' });
+  ensureContent();
 })();
