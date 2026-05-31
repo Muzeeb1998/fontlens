@@ -1,8 +1,25 @@
 // service-worker.js — MV3 background router. Holds zero important state.
 
-chrome.runtime.onInstalled.addListener(async () => {
+import { verdict } from './lib/install.js';
+
+chrome.runtime.onInstalled.addListener(async (details) => {
   if (chrome.sidePanel?.setPanelBehavior) {
     await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  }
+
+  // First-install onboarding: open the demo tab + side panel exactly once.
+  const demoUrl = chrome.runtime.getURL('onboarding/demo.html');
+  const storageGet = async (k) => {
+    const r = await chrome.storage.local.get(k);
+    return r[k];
+  };
+  const v = await verdict(details, { storageGet, demoUrl });
+  if (v.action !== 'open-demo') return;
+
+  await chrome.storage.local.set({ 'fontlens.installed': true });
+  const tab = await chrome.tabs.create({ url: v.url, active: true });
+  if (chrome.sidePanel?.open && tab?.id != null) {
+    try { await chrome.sidePanel.open({ tabId: tab.id }); } catch {}
   }
 });
 
