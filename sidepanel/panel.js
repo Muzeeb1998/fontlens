@@ -80,6 +80,58 @@ document.addEventListener('click', (e) => {
   copyDetail(detail, btn.dataset.copy);
 });
 
+// ---------- Variable-font axis sliders ----------
+const AXIS_THROTTLE_MS = 30;
+function throttle(fn, ms) {
+  let last = 0, pending = null, lastArgs = null;
+  return function (...args) {
+    lastArgs = args;
+    const now = Date.now();
+    const remain = ms - (now - last);
+    if (remain <= 0) {
+      last = now;
+      fn.apply(this, lastArgs);
+    } else if (!pending) {
+      pending = setTimeout(() => {
+        pending = null; last = Date.now();
+        fn.apply(this, lastArgs);
+      }, remain);
+    }
+  };
+}
+
+const applyAxes = throttle((styleKey, values) => {
+  sendToContent({ type: 'fontlens:apply-axes', styleKey, values });
+}, AXIS_THROTTLE_MS);
+
+regionEl.addEventListener('input', (e) => {
+  const input = e.target.closest('.fl-axis input[type="range"]');
+  if (!input) return;
+  const block = input.closest('.fl-axes');
+  if (!block) return;
+  const out = input.parentElement.querySelector('output');
+  if (out) out.textContent = input.value;
+  const values = {};
+  for (const ax of block.querySelectorAll('.fl-axis')) {
+    values[ax.dataset.tag] = Number(ax.querySelector('input').value);
+  }
+  applyAxes(block.dataset.styleKey, values);
+});
+
+regionEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.fl-axis-reset');
+  if (!btn) return;
+  const block = btn.closest('.fl-axes');
+  if (!block) return;
+  for (const ax of block.querySelectorAll('.fl-axis')) {
+    const input = ax.querySelector('input');
+    input.value = input.dataset.default;
+    const out = ax.querySelector('output');
+    if (out) out.textContent = input.dataset.default;
+  }
+  sendToContent({ type: 'fontlens:reset-axes', styleKey: block.dataset.styleKey });
+});
+
 // Default-format from chrome.storage.local (set by Options page — Phase 5)
 if (typeof chrome !== 'undefined' && chrome.storage?.local) {
   chrome.storage.local.get(['defaultFormat']).then(({ defaultFormat: stored }) => {

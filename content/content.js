@@ -57,6 +57,8 @@ export class ContentScript {
     this._lastCursor = null;
     this._enabled = false;
     this._nodeMap = new Map();          // id → Element (for highlight messages)
+    this._nodesByStyle = new Map();     // styleKey → Element[] (for axis sliders)
+    this._originalAxes = new WeakMap(); // Element → original fontVariationSettings string
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onClick     = this._onClick.bind(this);
@@ -135,9 +137,39 @@ export class ContentScript {
       case 'fontlens:unhighlight':
         this._clearHighlight();
         return;
+      case 'fontlens:apply-axes':
+        this._applyAxes(msg.styleKey, msg.values || {});
+        return;
+      case 'fontlens:reset-axes':
+        this._resetAxes(msg.styleKey);
+        return;
       case 'fontlens:disable':
         this.disable();
         return;
+    }
+  }
+
+  _applyAxes(styleKey, values) {
+    const list = this._nodesByStyle.get(styleKey);
+    if (!list) return;
+    const settings = Object.entries(values).map(([t, v]) => `"${t}" ${v}`).join(', ');
+    for (const el of list) {
+      if (!this._originalAxes.has(el)) {
+        this._originalAxes.set(el, el.style.fontVariationSettings || '');
+      }
+      el.style.fontVariationSettings = settings;
+    }
+  }
+
+  _resetAxes(styleKey) {
+    const list = this._nodesByStyle.get(styleKey);
+    if (!list) return;
+    for (const el of list) {
+      const orig = this._originalAxes.get(el);
+      if (orig === undefined) continue;
+      if (orig === '') el.style.removeProperty('font-variation-settings');
+      else el.style.fontVariationSettings = orig;
+      this._originalAxes.delete(el);
     }
   }
 
@@ -145,10 +177,18 @@ export class ContentScript {
     if (!this._extract) return;
     try {
       this._nodeMap.clear();
+      this._nodesByStyle.clear();
       const out = this._extract(document.body || document.documentElement, {
         nodeMap: this._nodeMap,
         hostname: location.hostname,
       });
+      // Build styleKey → Element[] map so axis sliders can mutate them.
+      for (const group of out.groups) {
+        for (const row of group.rows) {
+          const els = row.nodeIds.map(id => this._nodeMap.get(id)).filter(Boolean);
+          this._nodesByStyle.set(row.key, els);
+        }
+      }
       this._messaging.sendMessage({
         type: 'fontlens:extract-result',
         payload: {

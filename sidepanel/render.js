@@ -197,6 +197,61 @@ function buildRow(row, globalIndex) {
   return el;
 }
 
+function buildAxesBlock(group) {
+  // group.rows[0] carries the representative detail with axes
+  const detail = group.rows[0]?.detail;
+  const axes = detail?.axes;
+  if (!axes || !Object.keys(axes).length) return null;
+
+  const block = document.createElement('details');
+  block.className = 'fl-axes';
+  block.dataset.styleKey = group.rows[0].key;
+
+  const summary = document.createElement('summary');
+  const tags = Object.keys(axes).join(' · ');
+  summary.textContent = `${Object.keys(axes).length} axes — ${tags}`;
+  block.appendChild(summary);
+
+  for (const [tag, range] of Object.entries(axes)) {
+    if (range.min === range.max) continue;
+    const row = document.createElement('div');
+    row.className = 'fl-axis';
+    row.dataset.tag = tag;
+
+    const label = document.createElement('label');
+    label.textContent = tag;
+    const rangeSpan = document.createElement('span');
+    rangeSpan.className = 'fl-range';
+    rangeSpan.textContent = `${range.min}–${range.max}`;
+    label.appendChild(rangeSpan);
+    row.appendChild(label);
+
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = String(range.min);
+    input.max = String(range.max);
+    input.step = '1';
+    input.value = String(range.current);
+    input.dataset.default = String(range.current);
+    input.setAttribute('aria-label', `${tag} axis`);
+    row.appendChild(input);
+
+    const output = document.createElement('output');
+    output.textContent = String(range.current);
+    row.appendChild(output);
+
+    block.appendChild(row);
+  }
+
+  const reset = document.createElement('button');
+  reset.type = 'button';
+  reset.className = 'fl-axis-reset';
+  reset.textContent = 'Reset';
+  block.appendChild(reset);
+
+  return block;
+}
+
 export function renderGroups(regionEl, payload, callbacks = {}) {
   regionEl.innerHTML = '';
 
@@ -222,6 +277,11 @@ export function renderGroups(regionEl, payload, callbacks = {}) {
       rowEl.addEventListener('blur',      () => callbacks.onUnhighlight?.(row));
       rowEl.addEventListener('click',     () => callbacks.onActivate?.(row));
       card.appendChild(rowEl);
+    }
+
+    if (group.isVariable) {
+      const axesBlock = buildAxesBlock(group);
+      if (axesBlock) card.appendChild(axesBlock);
     }
 
     regionEl.appendChild(card);
