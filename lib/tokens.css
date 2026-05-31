@@ -18,6 +18,8 @@
   --amber-bg:        #fff8eb;
   --amber-border:    #f7e3b9;
   --amber-fg:        #7a4a1d;
+  /* Text color used ON the amber-500 fill (e.g. fallback badge label) */
+  --amber-fg-on-amber: #0f0f10;
 
   --t-xs:   10px; --lh-xs: 14px;
   --t-sm:   11px; --lh-sm: 16px;
@@ -52,6 +54,7 @@
   --amber-bg:        #2a1e08;
   --amber-border:    #574014;
   --amber-fg:        #f5d089;
+  --amber-fg-on-amber: #1a1100;
   --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
@@ -71,6 +74,7 @@
     --amber-bg:        #2a1e08;
     --amber-border:    #574014;
     --amber-fg:        #f5d089;
+    --amber-fg-on-amber: #1a1100;
     --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
   }
 }

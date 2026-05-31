@@ -149,7 +149,7 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   color: var(--fg-muted);
   font-weight: 600;
 }
-.fl-badge.is-fallback { background: var(--amber-500); color: #0f0f10; }
+.fl-badge.is-fallback { background: var(--amber-500); color: var(--amber-fg-on-amber); }
 .fl-badge.is-variable { background: var(--bg-subtle); color: var(--fg); }
 
 /* ===== Style row (DESIGN.md §6.5) ===== */
