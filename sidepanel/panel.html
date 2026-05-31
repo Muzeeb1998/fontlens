@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FontLens</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <header class="fl-header" role="banner">
+    <span class="fl-wordmark" aria-label="FontLens">FontLens</span>
+
+    <div class="fl-mode" role="group" aria-label="Inspection mode">
+      <button type="button" id="fl-mode-hover"
+              aria-pressed="true" aria-label="Hover mode">Hover</button>
+      <button type="button" id="fl-mode-inspect"
+              aria-pressed="false" aria-label="Inspect mode">Inspect</button>
+    </div>
+
+    <div class="fl-theme" role="group" aria-label="Theme">
+      <button type="button" id="fl-theme-auto"
+              aria-pressed="true"  aria-label="Auto theme">Auto</button>
+      <button type="button" id="fl-theme-light"
+              aria-pressed="false" aria-label="Light theme">Light</button>
+      <button type="button" id="fl-theme-dark"
+              aria-pressed="false" aria-label="Dark theme">Dark</button>
+    </div>
+  </header>
+
+  <div id="fl-banner" class="fl-banner" role="status" aria-live="polite" hidden>
+    <span class="fl-banner-dot" aria-hidden="true"></span>
+    <span id="fl-banner-text"></span>
+  </div>
+
+  <p id="fl-summary" class="fl-summary" aria-live="polite"></p>
+
+  <main id="fl-region" class="fl-region"
+        role="region" aria-label="Detected fonts" tabindex="-1">
+    <p class="fl-empty">Navigate to a page with text and try again.</p>
+  </main>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>
