@@ -182,47 +182,30 @@ describe('renderEmpty + renderTruncated', () => {
   });
 });
 
-describe('Get this font block', () => {
+describe('source flow — Mix X (clickable badge + Embed drawer)', () => {
   const google = { 'Inter': { c: 'sans-serif', w: [400, 700] } };
   const paid   = { 'Söhne': { foundry: 'Klim Type Foundry', url: 'https://klim.co.nz/retail-fonts/soehne/' } };
 
-  it('renders Google Fonts source block with link + copy buttons for an Inter family', () => {
+  it('renders the source badge as an <a> for Google Fonts families', () => {
     renderGroups(region, cleanPayload, { data: { google, paid } });
-    const source = region.querySelector('.fl-source.fl-source-google');
-    expect(source).toBeTruthy();
-    expect(source.querySelector('.fl-source-link')?.href).toContain('fonts.google.com/specimen/Inter');
-    const copyButtons = source.querySelectorAll('[data-copy="snippet"]');
-    expect(copyButtons.length).toBe(3); // Link, Import, CSS
+    const link = region.querySelector('.fl-card-head .fl-badge-link');
+    expect(link).toBeTruthy();
+    expect(link.tagName).toBe('A');
+    expect(link.href).toContain('fonts.google.com/specimen/Inter');
+    expect(link.textContent).toMatch(/Self-hosted|Google|↗/); // arrow indicator
   });
 
-  it('marks fallback cards without a source block', () => {
-    // fallbackPayload's first group has isFallback:true → should NOT get a source block
-    renderGroups(region, fallbackPayload, { data: { google, paid } });
-    const cards = region.querySelectorAll('.fl-card');
-    expect(cards[0].classList.contains('is-fallback')).toBe(true);
-    expect(cards[0].querySelector('.fl-source')).toBeNull();
-  });
-
-  it('renders paid block with foundry link + license note when family is in paid map', () => {
+  it('renders the source badge as an <a> for paid foundry families', () => {
     const sohnePayload = {
-      hostname: 'klim.co.nz',
-      totalNodes: 1,
-      truncated: false,
+      hostname: 'klim.co.nz', totalNodes: 1, truncated: false,
       groups: [{
         family: 'Söhne',
         source: { type: 'self-hosted', format: 'woff2' },
-        isFallback: false,
-        isVariable: false,
-        axes: null,
+        isFallback: false, isVariable: false, axes: null,
         rows: [{
-          key: 'Söhne|16px|400|24px|normal|none|#000000',
-          role: 'Body',
-          count: 1,
-          nodeIds: [1],
+          key: 'Söhne|16px|400|24px|normal|none|#000000', role: 'Body', count: 1, nodeIds: [1],
           detail: {
-            requested: ['Söhne'],
-            rendered: 'Söhne',
-            isFallback: false,
+            requested: ['Söhne'], rendered: 'Söhne', isFallback: false,
             source: { type: 'self-hosted', format: 'woff2', url: null, os: null },
             isVariable: false, axes: null,
             metrics: { size: '16px', weight: 400, lineHeight: '24px', letterSpacing: 'normal', transform: 'none', color: { rgb: 'rgb(0,0,0)', hex: '#000000' } },
@@ -232,10 +215,36 @@ describe('Get this font block', () => {
       }],
     };
     renderGroups(region, sohnePayload, { data: { google, paid } });
-    const paidBlock = region.querySelector('.fl-source.fl-source-paid');
-    expect(paidBlock).toBeTruthy();
-    expect(paidBlock.querySelector('.fl-source-link')?.href).toMatch(/klim\.co\.nz/);
-    expect(paidBlock.querySelector('.fl-source-note')?.textContent).toMatch(/Commercial face/);
+    const link = region.querySelector('.fl-card-head .fl-badge-link');
+    expect(link).toBeTruthy();
+    expect(link.href).toMatch(/klim\.co\.nz/);
+  });
+
+  it('adds an Embed button to rows of google / selfhosted / system kind', () => {
+    renderGroups(region, cleanPayload, { data: { google, paid } });
+    const embed = region.querySelector('.fl-row .fl-embed-toggle');
+    expect(embed).toBeTruthy();
+    expect(embed.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('inserts an Embed drawer (hidden by default) after each rendered row', () => {
+    renderGroups(region, cleanPayload, { data: { google, paid } });
+    const drawer = region.querySelector('.fl-embed-drawer');
+    expect(drawer).toBeTruthy();
+    expect(drawer.hidden).toBe(true);
+    expect(drawer.querySelector('.fl-embed-code')).toBeTruthy();
+  });
+
+  it('omits the Embed button for fallback rows', () => {
+    renderGroups(region, fallbackPayload, { data: { google, paid } });
+    const firstCard = region.querySelector('.fl-card.is-fallback');
+    expect(firstCard.querySelector('.fl-embed-toggle')).toBeNull();
+  });
+
+  it('drawer carries the row.key as data-embed-key (used by panel.js toggle)', () => {
+    renderGroups(region, cleanPayload, { data: { google, paid } });
+    const drawer = region.querySelector('.fl-embed-drawer');
+    expect(drawer.dataset.embedKey).toBe('Inter|16px|400|24px|normal|none|#0f0f10');
   });
 });
 

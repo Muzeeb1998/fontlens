@@ -133,7 +133,7 @@ function buildBadge(label, modifier) {
   return b;
 }
 
-function buildCardHead(group) {
+function buildCardHead(group, data) {
   const head = document.createElement('div');
   head.className = 'fl-card-head';
 
@@ -144,10 +144,12 @@ function buildCardHead(group) {
     : group.family;
   head.appendChild(name);
 
+  // Source badge — becomes a real <a> when the resolver yields a webpage URL.
   if (group.isFallback) {
     head.appendChild(buildBadge('Fallback', 'is-fallback'));
   } else {
-    head.appendChild(buildBadge(SOURCE_BADGE_LABEL[group.source.type] || 'Unknown'));
+    const sourceBadge = buildSourceBadge(group, data);
+    head.appendChild(sourceBadge);
   }
   if (group.isVariable) head.appendChild(buildBadge('Variable', 'is-variable'));
 
@@ -161,7 +163,53 @@ function buildCardHead(group) {
   return head;
 }
 
-function buildRow(row, globalIndex) {
+function resolveForGroup(group, data) {
+  const repr = group?.rows?.[0]?.detail;
+  if (!repr) return null;
+  try { return resolveFont(repr, data || {}); }
+  catch { return null; }
+}
+
+function buildSourceBadge(group, data) {
+  const resolved = resolveForGroup(group, data);
+  const label = SOURCE_BADGE_LABEL[group.source.type] || 'Unknown';
+
+  // Pick a webpage URL + tooltip per kind.
+  let href = null, tipText = '';
+  if (resolved?.kind === 'google') {
+    href = resolved.specimenUrl;
+    tipText = `Open ${resolved.name} on Google Fonts. License: ${resolved.license}.`;
+  } else if (resolved?.kind === 'paid') {
+    href = resolved.url;
+    tipText = `${resolved.foundry} — commercial face, license required.`;
+  } else if (resolved?.kind === 'selfhosted') {
+    try {
+      const u = new URL(resolved.url);
+      href = u.origin;
+      tipText = `First seen on ${u.host}.`;
+    } catch {}
+  } else if (resolved?.kind === 'system') {
+    tipText = resolved.os ? `System UI on ${resolved.os}.` : 'System UI font.';
+  }
+
+  if (href && /^https?:\/\//.test(href)) {
+    const a = document.createElement('a');
+    a.className = 'fl-badge fl-badge-link';
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = `${label} ↗`;
+    a.title = tipText;
+    a.setAttribute('aria-label', `Open ${label} page for ${group.family} in a new tab`);
+    return a;
+  }
+
+  const b = buildBadge(label);
+  if (tipText) b.title = tipText;
+  return b;
+}
+
+function buildRow(row, globalIndex, embedKind) {
   const el = document.createElement('div');
   el.className = 'fl-row';
   el.setAttribute('role', 'button');
@@ -221,6 +269,18 @@ function buildRow(row, globalIndex) {
       btn.appendChild(approx);
     }
     copy.appendChild(btn);
+  }
+  // Embed button — only when the resolver kind produces snippet text.
+  if (embedKind && ['google', 'selfhosted', 'system'].includes(embedKind)) {
+    const embed = document.createElement('button');
+    embed.type = 'button';
+    embed.className = 'fl-embed-toggle';
+    embed.dataset.embedToggle = row.key;
+    embed.setAttribute('aria-expanded', 'false');
+    embed.setAttribute('aria-controls', `fl-embed-${globalIndex}`);
+    embed.setAttribute('aria-label', 'Toggle embed snippet');
+    embed.textContent = 'Embed';
+    copy.appendChild(embed);
   }
   middle.appendChild(copy);
 
@@ -290,106 +350,61 @@ function buildAxesBlock(group) {
   return block;
 }
 
-function buildGetThisFontBlock(group, data) {
-  const repr = group.rows[0]?.detail;
-  if (!repr) return null;
-  const resolved = resolveFont(repr, data || {});
-  if (resolved.kind === 'unknown') return null;
+function buildEmbedDrawer(row, resolved, globalIndex) {
+  if (!resolved) return null;
   const snip = snippetsFor(resolved);
+  if (!snip || !['google', 'selfhosted', 'system'].includes(snip.kind)) return null;
 
-  const block = document.createElement('section');
-  block.className = `fl-source fl-source-${resolved.kind}`;
-  block.setAttribute('aria-label', 'Get this font');
+  const drawer = document.createElement('div');
+  drawer.className = 'fl-embed-drawer';
+  drawer.id = `fl-embed-${globalIndex}`;
+  drawer.dataset.embedKey = row.key;
+  drawer.hidden = true;
 
-  const head = document.createElement('div');
-  head.className = 'fl-source-head';
-  const title = document.createElement('span');
-  title.className = 'fl-source-title';
-  title.textContent = 'Get this font';
-  head.appendChild(title);
-  const badge = document.createElement('span');
-  badge.className = 'fl-source-badge';
-  badge.textContent = ({
-    google:     'Google Fonts · free',
-    paid:       `${snip.foundry || 'Commercial'} · paid`,
-    system:     'System UI',
-    selfhosted: 'Self-hosted',
-  })[resolved.kind] || '';
-  head.appendChild(badge);
-  block.appendChild(head);
-
-  // Optional link row. Always a human resource page (specimen / foundry /
-  // hosting site) — never a direct .woff2 / .otf download. Self-hosted
-  // points at the site origin since there is no public product page.
-  let primaryUrl = null;
-  let primaryLabel = null;
-  if (resolved.kind === 'google') {
-    primaryUrl = snip.specimenUrl;
-    primaryLabel = 'Open in Google Fonts ↗';
-  } else if (resolved.kind === 'paid') {
-    primaryUrl = snip.url;
-    primaryLabel = `Buy from ${snip.foundry} ↗`;
-  } else if (resolved.kind === 'selfhosted') {
-    try {
-      const u = new URL(snip.url);
-      primaryUrl = u.origin;
-      primaryLabel = `First seen on ${u.host} ↗`;
-    } catch { /* invalid URL — no link */ }
+  const lines = [];
+  if (snip.kind === 'google') {
+    if (snip.preconnect) lines.push({ label: '<link> + preconnect', value: snip.preconnect });
+    if (snip.importCss)  lines.push({ label: '@import',             value: snip.importCss });
+  } else if (snip.kind === 'selfhosted') {
+    if (snip.css) lines.push({ label: '@font-face', value: snip.css });
+  } else if (snip.kind === 'system') {
+    if (snip.css) lines.push({ label: 'System stack CSS', value: snip.css });
   }
 
-  // Only render the link when it's an http(s):// URL. A relative or
-  // extension-scheme URL would otherwise be resolved against the panel
-  // origin (chrome-extension://<id>/sidepanel/), producing a broken link.
-  if (primaryUrl && /^https?:\/\//.test(primaryUrl)) {
-    const a = document.createElement('a');
-    a.className = 'fl-source-link';
-    a.href = primaryUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.textContent = primaryLabel;
-    block.appendChild(a);
+  for (const { label, value } of lines) {
+    const r = document.createElement('div');
+    r.className = 'fl-embed-row';
+    const lab = document.createElement('span');
+    lab.className = 'fl-embed-label';
+    lab.textContent = label;
+    const pre = document.createElement('pre');
+    pre.className = 'fl-embed-code';
+    pre.textContent = value;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.copy = 'snippet';
+    btn.dataset.snippet = value;
+    btn.setAttribute('aria-label', `Copy ${label}`);
+    btn.textContent = 'Copy';
+    r.appendChild(lab);
+    r.appendChild(pre);
+    r.appendChild(btn);
+    drawer.appendChild(r);
   }
 
-  // Copy buttons per kind.
-  const btns = document.createElement('div');
-  btns.className = 'fl-source-btns';
-  const addBtn = (label, payloadStr, ariaSuffix) => {
-    if (!payloadStr) return;
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.dataset.copy = 'snippet';
-    b.dataset.snippet = payloadStr;
-    b.setAttribute('aria-label', `Copy ${ariaSuffix}`);
-    b.textContent = label;
-    btns.appendChild(b);
-  };
-  if (resolved.kind === 'google') {
-    addBtn('Link',   snip.link,      'Google Fonts <link> tag');
-    addBtn('Import', snip.importCss, '@import URL');
-    addBtn('CSS',    snip.css,       'font-family declaration');
-  } else if (resolved.kind === 'paid') {
-    addBtn('CSS',    snip.css,       'font-family declaration');
-  } else if (resolved.kind === 'system') {
-    addBtn('System stack CSS', snip.css, 'system-ui font stack');
-  } else if (resolved.kind === 'selfhosted') {
-    addBtn('@font-face', snip.css,   '@font-face block');
+  // Tiny instructional footer
+  const hint = document.createElement('p');
+  hint.className = 'fl-embed-hint';
+  if (snip.kind === 'google') {
+    hint.textContent = "Paste the <link> in <head>. Apply font-family via the row's CSS button.";
+  } else if (snip.kind === 'selfhosted') {
+    hint.textContent = 'Self-hosted face — host the file yourself; this @font-face references the original URL.';
+  } else {
+    hint.textContent = 'Native OS stack — no asset to load.';
   }
-  if (btns.children.length) block.appendChild(btns);
+  drawer.appendChild(hint);
 
-  if (resolved.kind === 'paid') {
-    const note = document.createElement('p');
-    note.className = 'fl-source-note';
-    note.textContent = 'Commercial face — buy a license from the foundry. Free alternative matcher ships in Launch 2.';
-    block.appendChild(note);
-  }
-  if (resolved.kind === 'google' && resolved.license) {
-    const note = document.createElement('p');
-    note.className = 'fl-source-note';
-    note.textContent = `License: ${resolved.license}.`;
-    block.appendChild(note);
-  }
-
-  return block;
+  return drawer;
 }
 
 export function renderGroups(regionEl, payload, callbacks = {}) {
@@ -411,27 +426,30 @@ export function renderGroups(regionEl, payload, callbacks = {}) {
     card.setAttribute('role', 'group');
     card.setAttribute('aria-label', `${group.family} family`);
 
-    card.appendChild(buildCardHead(group));
+    card.appendChild(buildCardHead(group, data));
+
+    // Resolve once per group; all rows share the same family/source.
+    const resolved = group.isFallback ? null : resolveForGroup(group, data);
+    const embedKind = resolved?.kind || null;
 
     for (const row of group.rows) {
-      const rowEl = buildRow(row, globalIndex++);
+      const idx = globalIndex++;
+      const rowEl = buildRow(row, idx, embedKind);
       rowEl.addEventListener('mouseenter', () => callbacks.onHighlight?.(row));
       rowEl.addEventListener('mouseleave', () => callbacks.onUnhighlight?.(row));
       rowEl.addEventListener('focus',     () => callbacks.onHighlight?.(row));
       rowEl.addEventListener('blur',      () => callbacks.onUnhighlight?.(row));
       rowEl.addEventListener('click',     () => callbacks.onActivate?.(row));
       card.appendChild(rowEl);
+
+      // Inline embed drawer for the row (hidden until the Embed button fires).
+      const drawer = buildEmbedDrawer(row, resolved, idx);
+      if (drawer) card.appendChild(drawer);
     }
 
     if (group.isVariable) {
       const axesBlock = buildAxesBlock(group);
       if (axesBlock) card.appendChild(axesBlock);
-    }
-
-    // "Get this font" — source link + ready-to-paste snippets.
-    if (!group.isFallback) {
-      const source = buildGetThisFontBlock(group, data);
-      if (source) card.appendChild(source);
     }
 
     regionEl.appendChild(card);

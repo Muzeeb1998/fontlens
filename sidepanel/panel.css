@@ -330,45 +330,53 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   padding: 0;
 }
 
-/* ===== "Get this font" block ===== */
-.fl-source {
-  border-top: 1px solid var(--border);
-  padding: var(--s-4) var(--s-5);
+/* ===== Source badge — link variant (Mix X) ===== */
+.fl-badge-link {
+  text-decoration: none;
+  color: var(--fg-muted);
+}
+.fl-badge-link:hover,
+.fl-badge-link:focus-visible {
+  background: var(--bg);
+  color: var(--fg);
+  text-decoration: underline;
+}
+
+/* ===== Inline Embed drawer ===== */
+.fl-embed-drawer[hidden] { display: none; }
+.fl-embed-drawer {
+  border-top: 1px dashed var(--border);
+  padding: var(--s-3) var(--s-5) var(--s-4);
   background: var(--bg-muted);
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
 }
-.fl-source-head {
-  display: flex;
+.fl-embed-row {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--s-3);
+  gap: var(--s-2);
 }
-.fl-source-title {
-  font-weight: 600;
-  font-size: var(--t-sm);
-  color: var(--fg);
-}
-.fl-source-badge {
+.fl-embed-label {
   font: 600 var(--t-xs) / 1 var(--font-mono);
   color: var(--fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.fl-source-link {
-  font-size: var(--t-sm);
-  color: var(--link);
-  text-decoration: none;
+.fl-embed-code {
+  margin: 0;
+  font: var(--t-xs) / 1.4 var(--font-mono);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: var(--s-2);
+  color: var(--fg);
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: auto;
 }
-.fl-source-link:hover,
-.fl-source-link:focus-visible { text-decoration: underline; }
-.fl-source-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1);
-}
-.fl-source-btns button {
+.fl-embed-row button {
   font: 500 var(--t-xs) / 1 var(--font-mono);
   padding: var(--s-1) var(--s-2);
   border-radius: 4px;
@@ -376,19 +384,20 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   color: var(--fg);
   border: 1px solid var(--border);
 }
-.fl-source-btns button:hover { background: var(--bg); }
-.fl-source-note {
+.fl-embed-row button:hover { background: var(--bg); }
+.fl-embed-hint {
   margin: 0;
   font-size: var(--t-xs);
-  color: var(--fg-muted);
   line-height: 1.4;
+  color: var(--fg-muted);
 }
-/* Paid-source visual cue: subtle amber border so the user knows it costs money */
-.fl-source-paid {
-  background: var(--amber-bg);
-  border-top-color: var(--amber-border);
+
+/* Embed toggle button sits in the .fl-copy row alongside CSS/Tailwind/Token */
+.fl-embed-toggle[aria-expanded="true"] {
+  background: var(--toggle-active-bg);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
-.fl-source-paid .fl-source-badge { color: var(--amber-fg); }
 
 /* ===== Toast (DESIGN.md §6.7) ===== */
 #fl-toast {

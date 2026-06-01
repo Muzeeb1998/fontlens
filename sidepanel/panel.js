@@ -86,8 +86,34 @@ function annotateApproximateTailwind() {
   }
 }
 
+// Embed toggle — show/hide the inline snippet drawer for a row.
+regionEl.addEventListener('click', (e) => {
+  const tog = e.target.closest('[data-embed-toggle]');
+  if (!tog) return;
+  e.stopPropagation();
+  const key = tog.dataset.embedToggle;
+  const drawer = regionEl.querySelector(`.fl-embed-drawer[data-embed-key="${CSS.escape(key)}"]`);
+  if (!drawer) return;
+  const open = drawer.hidden;
+  drawer.hidden = !open;
+  tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+
+// Esc inside the drawer closes it (a11y).
+regionEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const drawer = e.target.closest?.('.fl-embed-drawer');
+  if (!drawer || drawer.hidden) return;
+  drawer.hidden = true;
+  const tog = regionEl.querySelector(`[data-embed-toggle="${CSS.escape(drawer.dataset.embedKey)}"]`);
+  if (tog) {
+    tog.setAttribute('aria-expanded', 'false');
+    tog.focus();
+  }
+});
+
 // Click delegation — row copy buttons (CSS / Tailwind / Token) AND
-// "Get this font" snippet buttons (Link / Import / CSS / etc.).
+// inline drawer snippet copy buttons.
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-copy]');
   if (!btn) return;
