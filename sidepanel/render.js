@@ -318,12 +318,24 @@ function buildGetThisFontBlock(group, data) {
   head.appendChild(badge);
   block.appendChild(head);
 
-  // Optional link row (specimen / purchase / source).
+  // Optional link row. Always a human resource page (specimen / foundry /
+  // hosting site) — never a direct .woff2 / .otf download. Self-hosted
+  // points at the site origin since there is no public product page.
   let primaryUrl = null;
   let primaryLabel = null;
-  if (resolved.kind === 'google')      { primaryUrl = snip.specimenUrl; primaryLabel = 'Open in Google Fonts ↗'; }
-  else if (resolved.kind === 'paid')   { primaryUrl = snip.url;         primaryLabel = `Buy from ${snip.foundry} ↗`; }
-  else if (resolved.kind === 'selfhosted') { primaryUrl = snip.url;     primaryLabel = 'Source ↗'; }
+  if (resolved.kind === 'google') {
+    primaryUrl = snip.specimenUrl;
+    primaryLabel = 'Open in Google Fonts ↗';
+  } else if (resolved.kind === 'paid') {
+    primaryUrl = snip.url;
+    primaryLabel = `Buy from ${snip.foundry} ↗`;
+  } else if (resolved.kind === 'selfhosted') {
+    try {
+      const u = new URL(snip.url);
+      primaryUrl = u.origin;
+      primaryLabel = `First seen on ${u.host} ↗`;
+    } catch { /* invalid URL — no link */ }
+  }
 
   // Only render the link when it's an http(s):// URL. A relative or
   // extension-scheme URL would otherwise be resolved against the panel
