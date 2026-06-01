@@ -1,6 +1,9 @@
 // Pure DOM rendering helpers for the FontLens side panel.
 // No chrome.* here — panel.js owns the messaging seam.
 
+import { resolveFont } from '../lib/resolver.js';
+import { snippetsFor } from '../lib/snippets.js';
+
 const SPECIMEN_TEXT = 'Almost before we knew it';
 
 const SOURCE_BADGE_LABEL = {
@@ -287,11 +290,99 @@ function buildAxesBlock(group) {
   return block;
 }
 
+function buildGetThisFontBlock(group, data) {
+  const repr = group.rows[0]?.detail;
+  if (!repr) return null;
+  const resolved = resolveFont(repr, data || {});
+  if (resolved.kind === 'unknown') return null;
+  const snip = snippetsFor(resolved);
+
+  const block = document.createElement('section');
+  block.className = `fl-source fl-source-${resolved.kind}`;
+  block.setAttribute('aria-label', 'Get this font');
+
+  const head = document.createElement('div');
+  head.className = 'fl-source-head';
+  const title = document.createElement('span');
+  title.className = 'fl-source-title';
+  title.textContent = 'Get this font';
+  head.appendChild(title);
+  const badge = document.createElement('span');
+  badge.className = 'fl-source-badge';
+  badge.textContent = ({
+    google:     'Google Fonts · free',
+    paid:       `${snip.foundry || 'Commercial'} · paid`,
+    system:     'System UI',
+    selfhosted: 'Self-hosted',
+  })[resolved.kind] || '';
+  head.appendChild(badge);
+  block.appendChild(head);
+
+  // Optional link row (specimen / purchase / source).
+  let primaryUrl = null;
+  let primaryLabel = null;
+  if (resolved.kind === 'google')      { primaryUrl = snip.specimenUrl; primaryLabel = 'Open in Google Fonts ↗'; }
+  else if (resolved.kind === 'paid')   { primaryUrl = snip.url;         primaryLabel = `Buy from ${snip.foundry} ↗`; }
+  else if (resolved.kind === 'selfhosted') { primaryUrl = snip.url;     primaryLabel = 'Source ↗'; }
+
+  if (primaryUrl) {
+    const a = document.createElement('a');
+    a.className = 'fl-source-link';
+    a.href = primaryUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = primaryLabel;
+    block.appendChild(a);
+  }
+
+  // Copy buttons per kind.
+  const btns = document.createElement('div');
+  btns.className = 'fl-source-btns';
+  const addBtn = (label, payloadStr, ariaSuffix) => {
+    if (!payloadStr) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.copy = 'snippet';
+    b.dataset.snippet = payloadStr;
+    b.setAttribute('aria-label', `Copy ${ariaSuffix}`);
+    b.textContent = label;
+    btns.appendChild(b);
+  };
+  if (resolved.kind === 'google') {
+    addBtn('Link',   snip.link,      'Google Fonts <link> tag');
+    addBtn('Import', snip.importCss, '@import URL');
+    addBtn('CSS',    snip.css,       'font-family declaration');
+  } else if (resolved.kind === 'paid') {
+    addBtn('CSS',    snip.css,       'font-family declaration');
+  } else if (resolved.kind === 'system') {
+    addBtn('System stack CSS', snip.css, 'system-ui font stack');
+  } else if (resolved.kind === 'selfhosted') {
+    addBtn('@font-face', snip.css,   '@font-face block');
+  }
+  if (btns.children.length) block.appendChild(btns);
+
+  if (resolved.kind === 'paid') {
+    const note = document.createElement('p');
+    note.className = 'fl-source-note';
+    note.textContent = 'Commercial face — buy a license from the foundry. Free alternative matcher ships in Launch 2.';
+    block.appendChild(note);
+  }
+  if (resolved.kind === 'google' && resolved.license) {
+    const note = document.createElement('p');
+    note.className = 'fl-source-note';
+    note.textContent = `License: ${resolved.license}.`;
+    block.appendChild(note);
+  }
+
+  return block;
+}
+
 export function renderGroups(regionEl, payload, callbacks = {}) {
   regionEl.innerHTML = '';
 
   const footnotes = payload.footnotes || {};
   const blockedFrames = footnotes.blockedFrames || 0;
+  const data = callbacks?.data || {};
 
   if (!payload.groups.length && blockedFrames === 0) {
     renderEmpty(regionEl);
@@ -320,6 +411,12 @@ export function renderGroups(regionEl, payload, callbacks = {}) {
     if (group.isVariable) {
       const axesBlock = buildAxesBlock(group);
       if (axesBlock) card.appendChild(axesBlock);
+    }
+
+    // "Get this font" — source link + ready-to-paste snippets.
+    if (!group.isFallback) {
+      const source = buildGetThisFontBlock(group, data);
+      if (source) card.appendChild(source);
     }
 
     regionEl.appendChild(card);

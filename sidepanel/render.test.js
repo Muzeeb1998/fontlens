@@ -182,6 +182,63 @@ describe('renderEmpty + renderTruncated', () => {
   });
 });
 
+describe('Get this font block', () => {
+  const google = { 'Inter': { c: 'sans-serif', w: [400, 700] } };
+  const paid   = { 'Söhne': { foundry: 'Klim Type Foundry', url: 'https://klim.co.nz/retail-fonts/soehne/' } };
+
+  it('renders Google Fonts source block with link + copy buttons for an Inter family', () => {
+    renderGroups(region, cleanPayload, { data: { google, paid } });
+    const source = region.querySelector('.fl-source.fl-source-google');
+    expect(source).toBeTruthy();
+    expect(source.querySelector('.fl-source-link')?.href).toContain('fonts.google.com/specimen/Inter');
+    const copyButtons = source.querySelectorAll('[data-copy="snippet"]');
+    expect(copyButtons.length).toBe(3); // Link, Import, CSS
+  });
+
+  it('marks fallback cards without a source block', () => {
+    // fallbackPayload's first group has isFallback:true → should NOT get a source block
+    renderGroups(region, fallbackPayload, { data: { google, paid } });
+    const cards = region.querySelectorAll('.fl-card');
+    expect(cards[0].classList.contains('is-fallback')).toBe(true);
+    expect(cards[0].querySelector('.fl-source')).toBeNull();
+  });
+
+  it('renders paid block with foundry link + license note when family is in paid map', () => {
+    const sohnePayload = {
+      hostname: 'klim.co.nz',
+      totalNodes: 1,
+      truncated: false,
+      groups: [{
+        family: 'Söhne',
+        source: { type: 'self-hosted', format: 'woff2' },
+        isFallback: false,
+        isVariable: false,
+        axes: null,
+        rows: [{
+          key: 'Söhne|16px|400|24px|normal|none|#000000',
+          role: 'Body',
+          count: 1,
+          nodeIds: [1],
+          detail: {
+            requested: ['Söhne'],
+            rendered: 'Söhne',
+            isFallback: false,
+            source: { type: 'self-hosted', format: 'woff2', url: null, os: null },
+            isVariable: false, axes: null,
+            metrics: { size: '16px', weight: 400, lineHeight: '24px', letterSpacing: 'normal', transform: 'none', color: { rgb: 'rgb(0,0,0)', hex: '#000000' } },
+            confidence: 'high',
+          },
+        }],
+      }],
+    };
+    renderGroups(region, sohnePayload, { data: { google, paid } });
+    const paidBlock = region.querySelector('.fl-source.fl-source-paid');
+    expect(paidBlock).toBeTruthy();
+    expect(paidBlock.querySelector('.fl-source-link')?.href).toMatch(/klim\.co\.nz/);
+    expect(paidBlock.querySelector('.fl-source-note')?.textContent).toMatch(/Commercial face/);
+  });
+});
+
 describe('focusRow + countRows', () => {
   it('counts rows correctly', () => {
     renderGroups(region, fallbackPayload, {});

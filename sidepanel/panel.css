@@ -330,6 +330,66 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   padding: 0;
 }
 
+/* ===== "Get this font" block ===== */
+.fl-source {
+  border-top: 1px solid var(--border);
+  padding: var(--s-4) var(--s-5);
+  background: var(--bg-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.fl-source-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.fl-source-title {
+  font-weight: 600;
+  font-size: var(--t-sm);
+  color: var(--fg);
+}
+.fl-source-badge {
+  font: 600 var(--t-xs) / 1 var(--font-mono);
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fl-source-link {
+  font-size: var(--t-sm);
+  color: var(--link);
+  text-decoration: none;
+}
+.fl-source-link:hover,
+.fl-source-link:focus-visible { text-decoration: underline; }
+.fl-source-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+.fl-source-btns button {
+  font: 500 var(--t-xs) / 1 var(--font-mono);
+  padding: var(--s-1) var(--s-2);
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.fl-source-btns button:hover { background: var(--bg); }
+.fl-source-note {
+  margin: 0;
+  font-size: var(--t-xs);
+  color: var(--fg-muted);
+  line-height: 1.4;
+}
+/* Paid-source visual cue: subtle amber border so the user knows it costs money */
+.fl-source-paid {
+  background: var(--amber-bg);
+  border-top-color: var(--amber-border);
+}
+.fl-source-paid .fl-source-badge { color: var(--amber-fg); }
+
 /* ===== Toast (DESIGN.md §6.7) ===== */
 #fl-toast {
   position: fixed;

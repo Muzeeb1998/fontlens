@@ -17,7 +17,7 @@ const ALLOWED_PERMS = new Set(['activeTab', 'scripting', 'sidePanel', 'storage']
 const REQUIRED_ICONS = ['assets/icons/16.png', 'assets/icons/48.png', 'assets/icons/128.png'];
 const ALLOWED_PATH_PREFIXES = [
   'manifest.json', 'service-worker.js',
-  'content/', 'sidepanel/', 'options/', 'lib/', 'onboarding/', 'assets/icons/',
+  'content/', 'sidepanel/', 'options/', 'lib/', 'onboarding/', 'data/', 'assets/icons/',
 ];
 const BANNED_PATTERNS = [
   /\beval\s*\(/,

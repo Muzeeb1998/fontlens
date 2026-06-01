@@ -23,6 +23,7 @@ const INCLUDE_GLOBS = [
   'options/**/*',
   'lib/**/*',
   'onboarding/**/*',
+  'data/**/*.json',
   'assets/icons/16.png',
   'assets/icons/32.png',
   'assets/icons/48.png',

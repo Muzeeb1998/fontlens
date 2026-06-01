@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "purpose": "Map common commercial typefaces to their official foundry URL. Used by lib/resolver.js to classify a detected font as 'paid' and surface the legitimate purchase page (never a free-download / piracy link).",
+    "rule": "Only official foundry or authorized reseller URLs. Never a 'download free' link. When in doubt, omit."
+  },
+  "Söhne":            { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/soehne/" },
+  "Söhne Mono":       { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/soehne-mono/" },
+  "Söhne Breit":      { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/soehne-breit/" },
+  "Söhne Schmal":     { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/soehne-schmal/" },
+  "Tiempos":          { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/tiempos-text/" },
+  "Tiempos Text":     { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/tiempos-text/" },
+  "Tiempos Headline": { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/tiempos-headline/" },
+  "Founders Grotesk": { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/founders-grotesk/" },
+  "Calibre":          { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/calibre/" },
+  "Untitled Sans":    { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/untitled-sans/" },
+  "Untitled Serif":   { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/untitled-serif/" },
+  "National":         { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/national-2/" },
+  "Domaine":          { "foundry": "Klim Type Foundry",     "url": "https://klim.co.nz/retail-fonts/domaine-display/" },
+
+  "Gotham":           { "foundry": "Hoefler&Co",            "url": "https://www.typography.com/fonts/gotham/" },
+  "Gotham Narrow":    { "foundry": "Hoefler&Co",            "url": "https://www.typography.com/fonts/gotham-narrow/" },
+  "Whitney":          { "foundry": "Hoefler&Co",            "url": "https://www.typography.com/fonts/whitney/" },
+  "Mercury":          { "foundry": "Hoefler&Co",            "url": "https://www.typography.com/fonts/mercury-text/" },
+  "Sentinel":         { "foundry": "Hoefler&Co",            "url": "https://www.typography.com/fonts/sentinel/" },
+  "Archer":           { "foundry": "Hoefler&Co",            "url": "https://www.typography.com/fonts/archer/" },
+
+  "Graphik":          { "foundry": "Commercial Type",       "url": "https://commercialclassics.com/typefaces/graphik" },
+  "Druk":             { "foundry": "Commercial Type",       "url": "https://commercialtype.com/catalog/druk" },
+  "Publico":          { "foundry": "Commercial Type",       "url": "https://commercialtype.com/catalog/publico" },
+  "Caponi":           { "foundry": "Commercial Type",       "url": "https://commercialtype.com/catalog/caponi" },
+  "Marr Sans":        { "foundry": "Commercial Type",       "url": "https://commercialtype.com/catalog/marr_sans" },
+
+  "GT America":       { "foundry": "Grilli Type",           "url": "https://www.grillitype.com/typefaces/gt-america" },
+  "GT Walsheim":      { "foundry": "Grilli Type",           "url": "https://www.grillitype.com/typefaces/gt-walsheim" },
+  "GT Pressura":      { "foundry": "Grilli Type",           "url": "https://www.grillitype.com/typefaces/gt-pressura" },
+  "GT Super":         { "foundry": "Grilli Type",           "url": "https://www.grillitype.com/typefaces/gt-super" },
+  "GT Sectra":        { "foundry": "Grilli Type",           "url": "https://www.grillitype.com/typefaces/gt-sectra" },
+
+  "Suisse Int'l":     { "foundry": "Swiss Typefaces",       "url": "https://www.swisstypefaces.com/fonts/suisse/" },
+  "Suisse Works":     { "foundry": "Swiss Typefaces",       "url": "https://www.swisstypefaces.com/fonts/suisse/" },
+
+  "Maison Neue":      { "foundry": "Milieu Grotesque",      "url": "https://www.milieugrotesque.com/typefaces/maison-neue/" },
+  "Patron":           { "foundry": "Milieu Grotesque",      "url": "https://www.milieugrotesque.com/typefaces/patron/" },
+
+  "Apercu":           { "foundry": "Colophon Foundry",      "url": "https://www.colophon-foundry.org/typefaces/apercu/" },
+  "Aperçu":           { "foundry": "Colophon Foundry",      "url": "https://www.colophon-foundry.org/typefaces/apercu/" },
+  "Reader":           { "foundry": "Colophon Foundry",      "url": "https://www.colophon-foundry.org/typefaces/reader/" },
+
+  "Brown":            { "foundry": "Lineto",                "url": "https://lineto.com/typefaces/brown" },
+  "Akkurat":          { "foundry": "Lineto",                "url": "https://lineto.com/typefaces/akkurat" },
+  "Akkurat Mono":     { "foundry": "Lineto",                "url": "https://lineto.com/typefaces/akkurat-mono" },
+
+  "ABC Diatype":      { "foundry": "ABC Dinamo",            "url": "https://abcdinamo.com/typefaces/diatype" },
+  "ABC Ginto":        { "foundry": "ABC Dinamo",            "url": "https://abcdinamo.com/typefaces/ginto" },
+  "ABC Monument Grotesk": { "foundry": "ABC Dinamo",        "url": "https://abcdinamo.com/typefaces/monument-grotesk" },
+
+  "Roobert":          { "foundry": "Displaay",              "url": "https://displaay.net/typeface/roobert/" },
+  "Reckless":         { "foundry": "Displaay",              "url": "https://displaay.net/typeface/reckless/" },
+  "Larken":           { "foundry": "Displaay",              "url": "https://displaay.net/typeface/larken/" },
+
+  "Cera Pro":         { "foundry": "TypeMates",             "url": "https://typemates.com/fonts/cera-pro" },
+
+  "Helvetica Neue":   { "foundry": "Linotype / Monotype",   "url": "https://www.linotype.com/2090/neue-helvetica-family.html" },
+  "Avenir":           { "foundry": "Linotype / Monotype",   "url": "https://www.linotype.com/1245/avenir-family.html" },
+  "Avenir Next":      { "foundry": "Linotype / Monotype",   "url": "https://www.linotype.com/2090/avenir-next-family.html" },
+  "Futura":           { "foundry": "Linotype / Monotype",   "url": "https://www.linotype.com/677714/futura-pt-family.html" },
+  "Univers":          { "foundry": "Linotype / Monotype",   "url": "https://www.linotype.com/634/univers-next-family.html" }
+}

@@ -12,7 +12,25 @@ const state = {
   theme: 'auto',
   payload: null,
   highlightedKey: null,
+  data: { google: {}, paid: {} },  // bundled font datasets, loaded once on init
 };
+
+async function loadJsonFromExt(relPath) {
+  // Resolve from the extension origin (chrome-extension://<id>/...). The
+  // bundled JSON ships under data/. fetch() is allowed because the panel
+  // is same-origin to the extension.
+  const baseUrl =
+    typeof chrome !== 'undefined' && chrome.runtime?.getURL
+      ? chrome.runtime.getURL(relPath)
+      : `../${relPath}`;
+  try {
+    const res = await fetch(baseUrl);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
 
 const headerEl   = document.querySelector('header.fl-header');
 const bannerEl   = document.getElementById('fl-banner');
@@ -68,15 +86,32 @@ function annotateApproximateTailwind() {
   }
 }
 
-// Click delegation — copy buttons
-document.addEventListener('click', (e) => {
+// Click delegation — row copy buttons (CSS / Tailwind / Token) AND
+// "Get this font" snippet buttons (Link / Import / CSS / etc.).
+document.addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-copy]');
   if (!btn) return;
+  e.stopPropagation();
+
+  // "Get this font" snippet copy — payload travels inline on the button.
+  if (btn.dataset.copy === 'snippet') {
+    const text = btn.dataset.snippet || '';
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`Copied ${btn.textContent.trim()}`);
+    } catch (err) {
+      showToast('Copy failed — clipboard blocked');
+      console.error('[FontLens] clipboard write failed', err);
+    }
+    return;
+  }
+
+  // Style-row copy (CSS / Tailwind / Token).
   const row = btn.closest('.fl-row[data-detail]');
   if (!row) return;
   let detail;
   try { detail = JSON.parse(row.dataset.detail); } catch { return; }
-  e.stopPropagation();
   copyDetail(detail, btn.dataset.copy);
 });
 
@@ -170,6 +205,7 @@ function paint() {
     onActivate: (row) => {
       copyDetail(row.detail, defaultFormat);
     },
+    data: state.data,
   });
   annotateApproximateTailwind();
 }
@@ -276,6 +312,15 @@ async function ensureContent() {
 (async function init() {
   state.theme = await loadTheme();
   applyTheme(state.theme);
+  // Load bundled font datasets in parallel with the rest of init.
+  const dataPromise = Promise.all([
+    loadJsonFromExt('data/google-fonts.json'),
+    loadJsonFromExt('data/paid-fonts.json'),
+  ]).then(([g, p]) => {
+    state.data.google = g || {};
+    state.data.paid   = p || {};
+    if (state.payload) paint();  // re-render once data lands if payload arrived first
+  });
   bindHeader();
   bindKeyboard();
   bindMessages();
