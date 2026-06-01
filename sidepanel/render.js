@@ -325,7 +325,10 @@ function buildGetThisFontBlock(group, data) {
   else if (resolved.kind === 'paid')   { primaryUrl = snip.url;         primaryLabel = `Buy from ${snip.foundry} ↗`; }
   else if (resolved.kind === 'selfhosted') { primaryUrl = snip.url;     primaryLabel = 'Source ↗'; }
 
-  if (primaryUrl) {
+  // Only render the link when it's an http(s):// URL. A relative or
+  // extension-scheme URL would otherwise be resolved against the panel
+  // origin (chrome-extension://<id>/sidepanel/), producing a broken link.
+  if (primaryUrl && /^https?:\/\//.test(primaryUrl)) {
     const a = document.createElement('a');
     a.className = 'fl-source-link';
     a.href = primaryUrl;
