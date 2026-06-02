@@ -318,13 +318,31 @@ const ILLO_INSPECT = `
 <svg viewBox="0 0 96 96" width="96" height="96" fill="none" aria-hidden="true">
   <path d="M20 24h44M20 34h44M20 44h30M20 54h44M20 64h24"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-  <!-- magnifier -->
-  <circle cx="58" cy="50" r="16" stroke="currentColor" stroke-width="3"
-          fill="var(--bg)"/>
-  <path d="M58 44v12M52 50h12" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" opacity="0.6"/>
-  <path d="M70 62l10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- magnifier (gently scans left↔right via CSS on .fl-illo-scan) -->
+  <g class="fl-illo-scan">
+    <circle cx="58" cy="50" r="16" stroke="currentColor" stroke-width="3" fill="var(--bg)"/>
+    <path d="M58 44v12M52 50h12" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" opacity="0.6"/>
+    <path d="M70 62l10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </g>
 </svg>`;
+
+// Skeleton shimmer shown under the inspect "Scanning" copy while the
+// full-page extract is in flight. Swapped for real cards on extract-result.
+function buildScanSkeleton() {
+  const wrap = document.createElement('div');
+  wrap.className = 'fl-skeleton';
+  for (let i = 0; i < 3; i++) {
+    const card = document.createElement('div');
+    card.className = 'fl-skel-card';
+    card.innerHTML = `
+      <div class="fl-skel-bar fl-skel-head"></div>
+      <div class="fl-skel-bar fl-skel-row"></div>
+      <div class="fl-skel-bar fl-skel-row short"></div>`;
+    wrap.appendChild(card);
+  }
+  return wrap;
+}
 
 function renderEmptyForMode() {
   regionEl.innerHTML = '';
@@ -339,6 +357,7 @@ function renderEmptyForMode() {
   sub.className = 'fl-empty-sub';
 
   if (state.mode === 'inspect') {
+    box.classList.add('is-scanning');
     illo.innerHTML = ILLO_INSPECT;
     title.textContent = 'Scanning this page';
     sub.textContent = 'Every font and type style in use will appear here. Click any text if nothing shows.';
@@ -352,6 +371,9 @@ function renderEmptyForMode() {
   box.appendChild(title);
   box.appendChild(sub);
   regionEl.appendChild(box);
+
+  // Inspect: show shimmer skeleton beneath the copy while extract runs.
+  if (state.mode === 'inspect') regionEl.appendChild(buildScanSkeleton());
 }
 
 function applyTheme(theme) {

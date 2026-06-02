@@ -260,6 +260,49 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   line-height: 1.5;
   color: var(--fg-muted);
 }
+
+/* Gentle illustration motion (clean, GPU-friendly transform/opacity). */
+.fl-empty-illo { animation: fl-illo-float 3.2s ease-in-out infinite; }
+@keyframes fl-illo-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.fl-empty-state.is-scanning .fl-empty-illo { animation: none; }
+/* Magnifier sweeps left↔right while scanning. */
+.fl-illo-scan { animation: fl-scan 1.8s ease-in-out infinite; transform-box: fill-box; }
+@keyframes fl-scan {
+  0%, 100% { transform: translateX(-7px); }
+  50%      { transform: translateX(7px); }
+}
+
+/* Scanning skeleton */
+.fl-skeleton { padding: 0 var(--s-6) var(--s-8); }
+.fl-skel-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--s-5);
+  margin: var(--s-3) 0;
+}
+.fl-skel-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--bg-muted) 50%, var(--bg-subtle) 75%);
+  background-size: 200% 100%;
+  animation: fl-shimmer 1.4s linear infinite;
+}
+.fl-skel-head { width: 45%; height: 12px; margin-bottom: var(--s-4); }
+.fl-skel-row  { width: 85%; margin: var(--s-2) 0; }
+.fl-skel-row.short { width: 55%; }
+@keyframes fl-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-empty-illo,
+  .fl-illo-scan,
+  .fl-skel-bar { animation: none; }
+}
 .fl-truncated {
   padding: var(--s-3) var(--s-6);
   color: var(--fg-faint);
