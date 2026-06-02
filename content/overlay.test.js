@@ -315,3 +315,83 @@ describe('Overlay — modes + emission', () => {
     expect(overlay.getMode()).toBe('hover');
   });
 });
+
+describe('Overlay — compact vs expanded chip', () => {
+  function baseDetail() {
+    return {
+      requested: ['Inter', 'sans-serif'],
+      rendered: 'Inter',
+      isFallback: false,
+      source: { type: 'self-hosted', format: 'woff2', url: null, os: null },
+      isVariable: false, axes: null,
+      metrics: {
+        size: '16px', weight: 400, lineHeight: '24px',
+        letterSpacing: 'normal', transform: 'none',
+        color: { rgb: 'rgb(34,34,34)', hex: '#222222' },
+      },
+      confidence: 'high',
+    };
+  }
+
+  it('compact chip exposes a "View more" button by default', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    const more = overlay._chip.querySelector('.viewmore');
+    expect(more).toBeTruthy();
+    expect(more.textContent).toMatch(/View more/);
+    expect(overlay._chip.getAttribute('data-expanded')).toBe('false');
+  });
+
+  it('clicking "View more" expands the card and pins the chip', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    overlay._chip.querySelector('.viewmore').click();
+    expect(overlay._chip.getAttribute('data-expanded')).toBe('true');
+    expect(overlay.isPinned()).toBe(true);
+    expect(overlay._chip.querySelector('.exp-head')).toBeTruthy();
+    expect(overlay._chip.querySelector('.exp-specimen')).toBeTruthy();
+    expect(overlay._chip.querySelector('.exp-color-swatch')).toBeTruthy();
+  });
+
+  it('expanded view shows Family/Style/Weight/Color/Size/Line Height labels', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    overlay._setExpanded(true);
+    const labels = [...overlay._chip.querySelectorAll('.exp-label')].map(n => n.textContent.trim());
+    expect(labels).toEqual(['Family', 'Style', 'Weight', 'Color', 'Size', 'Line Height']);
+  });
+
+  it('close button collapses + hides the chip', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    overlay._setExpanded(true);
+    overlay._chip.querySelector('.exp-close').click();
+    expect(overlay._chip.getAttribute('data-expanded')).toBe('false');
+    expect(overlay._chip.style.display).toBe('none');
+    expect(overlay.isPinned()).toBe(false);
+  });
+
+  it('Esc on expanded card closes it', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    overlay._setExpanded(true);
+    overlay.handleKey({ key: 'Escape' });
+    expect(overlay._chip.getAttribute('data-expanded')).toBe('false');
+    expect(overlay._chip.style.display).toBe('none');
+  });
+
+  it('color swatch background matches detected hex', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    overlay._setExpanded(true);
+    const sw = overlay._chip.querySelector('.exp-color-swatch');
+    // happy-dom normalises background to a longhand; just assert it isn't empty
+    expect(sw.style.background || sw.style.backgroundColor).toMatch(/#222222|rgb\(34,\s*34,\s*34\)/i);
+  });
+});
