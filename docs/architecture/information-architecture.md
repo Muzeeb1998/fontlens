@@ -129,7 +129,10 @@ Content by zone:
 - **Header**: brand wordmark · mode toggle (Hover/Inspect) · Download-tokens icon · single sun/moon theme icon (light↔dark)
 - **Banner** (conditional): amber strip, only when any family has a fallback
 - **Summary**: aggregate counts + hostname
-- **Region** (`role="region"`): family cards, ordered fallback-first then by usage
+- **Mode hint** (conditional line under summary): inspect mode → "Inspect mode — every type style used on this page."; hover mode with ≥1 pin → "N pinned. Click more text to add — Clear".
+- **Region** (`role="region"`): cards depend on mode —
+  - **Hover mode**: only the cards the user clicked (pinned), accumulated. Empty-state prompts "Hover any text, then click to pin its card here." Clear button resets the stack.
+  - **Inspect mode**: the full-page extract — every family + style on the page, ordered fallback-first then by usage.
 - **Footnotes** (conditional): truncation note, closed-shadow note
 - **Cross-origin placeholder card** (conditional)
 - **Toast**: copy confirmations, fades 1800 ms
@@ -480,10 +483,15 @@ Download tokens:
   → Blob → object URL → <a download="fontlens-<host>-tokens.json"> click
   → revokeObjectURL → toast "Downloaded N type styles".
 
-Mode:
-  Click Hover / Inspect → state.mode = mode
-  → sendToContent({type:'fontlens:set-mode', mode})
-  → overlay.setMode(mode) on page side
+Mode (drives what the region shows):
+  Click Hover → state.mode='hover' → set-mode → paint()
+    region = accumulated hover picks (state.hoverPicks), or pin prompt.
+  Click Inspect → state.mode='inspect', inspectPayload=null
+    → set-mode + request-extract (whole page) → paint() shows hint + "Scanning…"
+    → extract-result lands → inspectPayload set → paint() shows full page.
+  hover-pick message (hover mode only): append group to hoverPicks (dedupe
+    by family+styleKey) → paint(). Multi-click stacks multiple cards.
+  Clear button: hoverPicks=[] → empty prompt.
   → paint() (header aria-pressed flips)
 ```
 

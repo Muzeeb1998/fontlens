@@ -104,6 +104,25 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   font-variant-numeric: tabular-nums;
 }
 
+/* ===== Mode hint ===== */
+.fl-hint {
+  margin: 0;
+  padding: var(--s-2) var(--s-6) var(--s-3);
+  color: var(--fg-muted);
+  font-size: var(--t-sm);
+}
+.fl-hint[hidden] { display: none; }
+.fl-hint-clear {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--link);
+  font: inherit;
+  cursor: pointer;
+}
+.fl-hint-clear:hover,
+.fl-hint-clear:focus-visible { text-decoration: underline; outline: none; }
+
 /* ===== Region ===== */
 .fl-region {
   padding: 0 var(--s-6) var(--s-8);

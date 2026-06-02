@@ -11,10 +11,19 @@ import { toTokenDoc, tokenFilename } from '../lib/tokens-export.js';
 const state = {
   mode: 'hover',
   theme: 'light',
-  payload: null,
+  payload: null,            // active payload shown in region (derived per mode)
+  hoverPicks: [],           // hover mode: accumulated clicked-card groups
+  hoverHost: '',            // hostname captured from the latest hover pick
+  inspectPayload: null,     // inspect mode: full-page extract result
   highlightedKey: null,
   data: { google: {}, paid: {} },  // bundled font datasets, loaded once on init
 };
+
+// Dedupe key for a hover-picked group: family + the style key of its row.
+function pickKey(group) {
+  const rowKey = group?.rows?.[0]?.key || '';
+  return `${group?.family || ''}|${rowKey}`;
+}
 
 async function loadJsonFromExt(relPath) {
   // Resolve from the extension origin (chrome-extension://<id>/...). The
@@ -211,18 +220,71 @@ if (typeof chrome !== 'undefined' && chrome.storage?.local) {
   });
 }
 
+// Resolve which payload to render based on the active mode.
+function activePayload() {
+  if (state.mode === 'inspect') return state.inspectPayload;
+  // hover mode: synthesize a payload from accumulated picks
+  if (!state.hoverPicks.length) return null;
+  return {
+    hostname: state.hoverHost,
+    totalNodes: state.hoverPicks.length,
+    truncated: false,
+    groups: state.hoverPicks,
+  };
+}
+
+function renderModeHint() {
+  // A small contextual line above the cards. Tells the user what this mode does.
+  let hint = document.getElementById('fl-hint');
+  if (!hint) {
+    hint = document.createElement('p');
+    hint.id = 'fl-hint';
+    hint.className = 'fl-hint';
+    summaryEl.insertAdjacentElement('afterend', hint);
+  }
+  if (state.mode === 'inspect') {
+    hint.textContent = 'Inspect mode — every type style used on this page.';
+    hint.hidden = false;
+  } else if (state.hoverPicks.length) {
+    hint.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = `${state.hoverPicks.length} pinned. Click more text to add — `;
+    const clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'fl-hint-clear';
+    clear.textContent = 'Clear';
+    clear.addEventListener('click', clearHoverPicks);
+    hint.appendChild(span);
+    hint.appendChild(clear);
+    hint.hidden = false;
+  } else {
+    hint.hidden = true;
+  }
+}
+
+function clearHoverPicks() {
+  state.hoverPicks = [];
+  state.payload = null;
+  paint();
+}
+
 function paint() {
   renderHeader(headerEl, { mode: state.mode });
+  state.payload = activePayload();
   updateDownloadEnabled();
+  renderModeHint();
+
   if (!state.payload || !state.payload.groups.length) {
     renderBanner(bannerEl, bannerText, { fallbackCount: 0 });
     summaryEl.textContent = '';
-    renderEmpty(regionEl);
+    renderEmptyForMode();
     return;
   }
   const fallbackCount = state.payload.groups.filter(g => g.isFallback).length;
   renderBanner(bannerEl, bannerText, { fallbackCount });
-  renderSummary(summaryEl, state.payload);
+  // Summary only meaningful for the whole-page inspect view.
+  if (state.mode === 'inspect') renderSummary(summaryEl, state.payload);
+  else summaryEl.textContent = '';
   renderGroups(regionEl, state.payload, {
     onHighlight: (row) => {
       state.highlightedKey = row.key;
@@ -238,6 +300,18 @@ function paint() {
     data: state.data,
   });
   annotateApproximateTailwind();
+}
+
+function renderEmptyForMode() {
+  regionEl.innerHTML = '';
+  const p = document.createElement('p');
+  p.className = 'fl-empty';
+  if (state.mode === 'inspect') {
+    p.textContent = 'Scanning the page… click anywhere if nothing appears.';
+  } else {
+    p.textContent = 'Hover any text on the page, then click to pin its card here.';
+  }
+  regionEl.appendChild(p);
 }
 
 function applyTheme(theme) {
@@ -276,12 +350,14 @@ function bindHeader() {
   document.getElementById('fl-mode-hover').addEventListener('click', () => {
     state.mode = 'hover';
     sendToContent({ type: 'fontlens:set-mode', mode: 'hover' });
-    paint();
+    paint(); // shows accumulated hover picks (or empty-state prompt)
   });
   document.getElementById('fl-mode-inspect').addEventListener('click', () => {
     state.mode = 'inspect';
+    state.inspectPayload = null;            // clear stale full-page result
     sendToContent({ type: 'fontlens:set-mode', mode: 'inspect' });
-    paint();
+    sendToContent({ type: 'fontlens:request-extract' }); // pull whole-page typography
+    paint(); // shows "Scanning…" until extract-result lands
   });
 
   // Single theme toggle: flip light ↔ dark.
@@ -336,18 +412,27 @@ function bindKeyboard() {
 function bindMessages() {
   onContentMessage((msg) => {
     if (msg.type === 'fontlens:extract-result') {
-      state.payload = msg.payload;
-      paint();
+      // Full-page extract — only drives the panel while in inspect mode.
+      state.inspectPayload = msg.payload;
+      if (state.mode === 'inspect') paint();
     } else if (msg.type === 'fontlens:mode-changed') {
+      // Mirror page-side mode changes (e.g. Esc from the overlay).
+      if (msg.mode === state.mode) return;
       state.mode = msg.mode;
+      if (msg.mode === 'inspect') {
+        state.inspectPayload = null;
+        sendToContent({ type: 'fontlens:request-extract' });
+      }
       paint();
     } else if (msg.type === 'fontlens:hover-pick') {
-      state.payload = {
-        hostname: msg.payload.hostname,
-        totalNodes: 1,
-        truncated: false,
-        groups: [msg.payload.group],
-      };
+      // Append the clicked card to the hover stack (dedupe). Hover only.
+      if (state.mode !== 'hover') return;
+      state.hoverHost = msg.payload.hostname || state.hoverHost;
+      const group = msg.payload.group;
+      const key = pickKey(group);
+      if (!state.hoverPicks.some(g => pickKey(g) === key)) {
+        state.hoverPicks.push(group);
+      }
       paint();
     }
   });
