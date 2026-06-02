@@ -385,6 +385,27 @@ describe('Overlay — compact vs expanded chip', () => {
     expect(overlay._chip.style.display).toBe('none');
   });
 
+  it('repeated show() on same element does NOT re-position the chip (anti-chase)', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    const el = document.createElement('p');
+    overlay.show(el, { x: 100, y: 100 });
+    const firstTransform = overlay._chip.style.transform;
+    overlay.show(el, { x: 500, y: 500 }); // cursor moved, same element
+    expect(overlay._chip.style.transform).toBe(firstTransform);
+  });
+
+  it('show() on a DIFFERENT element does re-position the chip', () => {
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
+    overlay.mount();
+    const a = document.createElement('p');
+    const b = document.createElement('p');
+    overlay.show(a, { x: 100, y: 100 });
+    const t1 = overlay._chip.style.transform;
+    overlay.show(b, { x: 500, y: 500 });
+    expect(overlay._chip.style.transform).not.toBe(t1);
+  });
+
   it('color swatch background matches detected hex', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();

@@ -322,10 +322,17 @@ export class Overlay {
   show(el, cursor) {
     if (!this._host) this.mount();
     if (this._pinned) return;
-    const detail = this._detect(el);
+
+    // Freeze position while the user is still over the same element so they
+    // can move toward the chip (e.g. to click "View more") without it
+    // running away. Reposition only when the element under cursor changes.
+    const sameEl = this._lastDetail?.el === el;
+    const detail = sameEl && this._lastDetail?.detail
+      ? this._lastDetail.detail
+      : this._detect(el);
     this._lastDetail = { detail, el, cursor };
-    this._renderChip(detail);
-    this._position(cursor);
+    if (!sameEl) this._renderChip(detail);
+    if (!sameEl) this._position(cursor);
   }
 
   hide() {
