@@ -49,27 +49,35 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
 
-/* ===== Theme toggle ===== */
-.fl-theme {
+/* ===== Header actions: Download + single theme toggle ===== */
+.fl-actions {
   justify-self: end;
   display: inline-flex;
-  background: var(--bg-subtle);
+  align-items: center;
+  gap: var(--s-1);
+}
+.fl-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
-  padding: 2px;
-}
-.fl-theme button {
-  font-size: var(--t-xs);
-  padding: var(--s-1) var(--s-2);
-  border-radius: 4px;
   color: var(--fg-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  background: none;
+  border: 0;
+  cursor: pointer;
 }
-.fl-theme button[aria-pressed="true"] {
-  background: var(--toggle-active-bg);
-  color: var(--fg);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
+.fl-icon-btn:hover { background: var(--bg-subtle); color: var(--fg); }
+.fl-icon-btn:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+.fl-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.fl-icon-btn:disabled:hover { background: none; color: var(--fg-muted); }
+
+/* Sun shows in dark mode, moon shows in light mode (the action it triggers). */
+.fl-icon-sun  { display: none; }
+.fl-icon-moon { display: inline; }
+[data-theme="dark"] .fl-icon-sun  { display: inline; }
+[data-theme="dark"] .fl-icon-moon { display: none; }
 
 /* ===== Fallback banner (DESIGN.md §6.3) ===== */
 .fl-banner {

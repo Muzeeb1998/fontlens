@@ -81,7 +81,7 @@ All tokens declared as CSS custom properties on `:root` in `sidepanel/panel.css`
 | `--amber-border`    | `#574014` | Fallback card border |
 | `--amber-fg`        | `#f5d089` | Fallback text |
 
-Theme is selected via `prefers-color-scheme` by default; the panel header has a manual override (Auto / Light / Dark) persisted in `chrome.storage.local` under key `theme`.
+Theme is a single sun/moon icon toggle in the panel header that flips light ↔ dark, persisted in `chrome.storage.local` under key `theme`. Light is the default. (The earlier three-state Auto/Light/Dark control was collapsed to one icon for a cleaner header; OS-follow "Auto" was dropped.)
 
 ### 3.3 Forbidden combinations
 
@@ -166,7 +166,7 @@ requested: Söhne     ← only when isFallback, fg-muted
 
 ### 6.2 Side Panel Header
 
-Wordmark (left, weight 600, size `--t-md`), mode toggle (center, segmented control over `--bg-subtle`), theme toggle icon (right). Bottom border `1px solid var(--border)`.
+Wordmark (left, weight 600, size `--t-md`), mode toggle (center, segmented control over `--bg-subtle`), and a right-aligned action cluster: Download-tokens icon button + single sun/moon theme icon button (both 28×28, `.fl-icon-btn`). Bottom border `1px solid var(--border)`. Download is disabled until a payload exists.
 
 ### 6.3 Fallback Banner
 

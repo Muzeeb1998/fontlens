@@ -69,7 +69,8 @@ test.describe('sidepanel/panel.html', () => {
 
     await expect(page.locator('#fl-mode-hover')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#fl-mode-inspect')).toHaveAttribute('aria-pressed', 'false');
-    await expect(page.locator('#fl-theme-auto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#fl-theme-toggle')).toBeVisible();
+    await expect(page.locator('#fl-download')).toBeDisabled(); // no payload yet
     await expect(page.locator('.fl-empty')).toBeVisible();
     await expect(page.locator('.fl-empty')).toContainText('Navigate to a page');
 
@@ -85,18 +86,21 @@ test.describe('sidepanel/panel.html', () => {
     await expect(page.locator('#fl-mode-inspect')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('theme toggle flips data-theme', async ({ page }) => {
+  test('single theme icon flips data-theme light↔dark', async ({ page }) => {
     await page.setViewportSize({ width: 380, height: 800 });
     await page.goto('/sidepanel/panel.html');
-    await page.click('#fl-theme-dark');
+    // starts light
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await page.click('#fl-theme-toggle');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(page.locator('#fl-theme-dark')).toHaveAttribute('aria-pressed', 'true');
+    await page.click('#fl-theme-toggle');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   });
 
   test('dark mode active toggle bg is distinct from track (post-QA fix)', async ({ page }) => {
     await page.setViewportSize({ width: 380, height: 800 });
     await page.goto('/sidepanel/panel.html');
-    await page.click('#fl-theme-dark');
+    await page.click('#fl-theme-toggle');
     await page.click('#fl-mode-inspect');
 
     const activeBg = await page.locator('#fl-mode-inspect').evaluate(
@@ -209,7 +213,7 @@ test.describe('contrast (post-a11y-fix)', () => {
 
   test('dark --fg-faint passes AA on --bg (the bumped #8a8a8e)', async ({ page }) => {
     await page.goto('/sidepanel/panel.html');
-    await page.click('#fl-theme-dark');
+    await page.click('#fl-theme-toggle');
     const probe = await page.evaluate(() => {
       const el = document.createElement('div');
       el.style.color = 'var(--fg-faint)';

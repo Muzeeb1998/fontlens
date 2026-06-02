@@ -11,8 +11,7 @@ let header, banner, bannerText, summary, region;
 beforeEach(() => {
   document.body.innerHTML = `
     <header id="h">
-      <div id="m"><button id="m-hover" aria-pressed="false"></button><button id="m-inspect" aria-pressed="false"></button></div>
-      <div id="t"><button id="t-auto" aria-pressed="false"></button><button id="t-light" aria-pressed="false"></button><button id="t-dark" aria-pressed="false"></button></div>
+      <div id="m"><button id="fl-mode-hover" aria-pressed="false"></button><button id="fl-mode-inspect" aria-pressed="false"></button></div>
     </header>
     <div id="b" hidden><span id="bt"></span></div>
     <p id="s"></p>
@@ -27,15 +26,14 @@ beforeEach(() => {
 
 describe('renderHeader', () => {
   it('sets aria-pressed on the active mode button', () => {
-    renderHeader(header, { mode: 'inspect', theme: 'auto' });
-    expect(document.getElementById('m-hover').getAttribute('aria-pressed')).toBe('false');
-    expect(document.getElementById('m-inspect').getAttribute('aria-pressed')).toBe('true');
+    renderHeader(header, { mode: 'inspect' });
+    expect(document.getElementById('fl-mode-hover').getAttribute('aria-pressed')).toBe('false');
+    expect(document.getElementById('fl-mode-inspect').getAttribute('aria-pressed')).toBe('true');
   });
-  it('sets aria-pressed on the active theme button', () => {
-    renderHeader(header, { mode: 'hover', theme: 'dark' });
-    expect(document.getElementById('t-auto').getAttribute('aria-pressed')).toBe('false');
-    expect(document.getElementById('t-light').getAttribute('aria-pressed')).toBe('false');
-    expect(document.getElementById('t-dark').getAttribute('aria-pressed')).toBe('true');
+  it('flips back to hover', () => {
+    renderHeader(header, { mode: 'hover' });
+    expect(document.getElementById('fl-mode-hover').getAttribute('aria-pressed')).toBe('true');
+    expect(document.getElementById('fl-mode-inspect').getAttribute('aria-pressed')).toBe('false');
   });
 });
 

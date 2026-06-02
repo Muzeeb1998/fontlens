@@ -16,22 +16,13 @@ const SOURCE_BADGE_LABEL = {
 
 // ---------------- Header ----------------
 
-export function renderHeader(headerEl, { mode, theme }) {
-  for (const btn of headerEl.querySelectorAll('button')) {
-    if (!btn.id) continue;
-    if (btn.id.endsWith('hover') || btn.id.endsWith('inspect')) {
-      const want =
-        (btn.id.endsWith('hover')   && mode === 'hover')  ||
-        (btn.id.endsWith('inspect') && mode === 'inspect');
-      btn.setAttribute('aria-pressed', want ? 'true' : 'false');
-    } else if (btn.id.endsWith('auto') || btn.id.endsWith('light') || btn.id.endsWith('dark')) {
-      const want =
-        (btn.id.endsWith('auto')  && theme === 'auto')  ||
-        (btn.id.endsWith('light') && theme === 'light') ||
-        (btn.id.endsWith('dark')  && theme === 'dark');
-      btn.setAttribute('aria-pressed', want ? 'true' : 'false');
-    }
-  }
+export function renderHeader(headerEl, { mode }) {
+  // Mode toggle (Hover / Inspect). Theme is a single icon button handled
+  // entirely in panel.js — no aria-pressed state to sync here.
+  const hover = headerEl.querySelector('#fl-mode-hover');
+  const inspect = headerEl.querySelector('#fl-mode-inspect');
+  if (hover)   hover.setAttribute('aria-pressed',   mode === 'hover'   ? 'true' : 'false');
+  if (inspect) inspect.setAttribute('aria-pressed', mode === 'inspect' ? 'true' : 'false');
 }
 
 // ---------------- Banner ----------------

@@ -126,7 +126,7 @@ Chrome Side Panel API. Persistent across page clicks. The workhorse surface.
 ```
 
 Content by zone:
-- **Header**: brand wordmark · mode toggle (Hover/Inspect) · theme toggle (Auto/Light/Dark)
+- **Header**: brand wordmark · mode toggle (Hover/Inspect) · Download-tokens icon · single sun/moon theme icon (light↔dark)
 - **Banner** (conditional): amber strip, only when any family has a fallback
 - **Summary**: aggregate counts + hostname
 - **Region** (`role="region"`): family cards, ordered fallback-first then by usage
@@ -465,13 +465,20 @@ Mouseleave / blur:
   → content.js _clearHighlight: removes class from all marked nodes
 ```
 
-### 6.9 Theme + mode toggles
+### 6.9 Theme + mode toggles + download
 
 ```
-Theme:
-  Click Auto / Light / Dark → applyTheme(t) → document[data-theme]=t
-  → saveTheme(t) → chrome.storage.local.set({theme:t})
-  → paint() (renderHeader updates aria-pressed)
+Theme (single sun/moon icon):
+  Click #fl-theme-toggle → next = (theme==='dark' ? 'light' : 'dark')
+  → applyTheme(next) → document[data-theme]=next
+  → saveTheme(next) → chrome.storage.local.set({theme:next})
+  CSS swaps moon (light) ↔ sun (dark) via [data-theme="dark"] rules.
+
+Download tokens:
+  Button enabled once payload has groups.
+  Click #fl-download → toTokenDoc(payload) → JSON.stringify
+  → Blob → object URL → <a download="fontlens-<host>-tokens.json"> click
+  → revokeObjectURL → toast "Downloaded N type styles".
 
 Mode:
   Click Hover / Inspect → state.mode = mode

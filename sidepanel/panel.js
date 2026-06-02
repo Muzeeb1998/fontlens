@@ -6,10 +6,11 @@ import {
   renderEmpty, focusRow,
 } from './render.js';
 import { toCSS, toTailwind, toTailwindStructured, toToken } from '../lib/export.js';
+import { toTokenDoc, tokenFilename } from '../lib/tokens-export.js';
 
 const state = {
   mode: 'hover',
-  theme: 'auto',
+  theme: 'light',
   payload: null,
   highlightedKey: null,
   data: { google: {}, paid: {} },  // bundled font datasets, loaded once on init
@@ -38,6 +39,8 @@ const bannerText = document.getElementById('fl-banner-text');
 const summaryEl  = document.getElementById('fl-summary');
 const regionEl   = document.getElementById('fl-region');
 const toastEl    = document.getElementById('fl-toast');
+const downloadEl = document.getElementById('fl-download');
+const themeEl    = document.getElementById('fl-theme-toggle');
 
 // ---------- Copy + Toast ----------
 let defaultFormat = 'css';
@@ -209,7 +212,8 @@ if (typeof chrome !== 'undefined' && chrome.storage?.local) {
 }
 
 function paint() {
-  renderHeader(headerEl, { mode: state.mode, theme: state.theme });
+  renderHeader(headerEl, { mode: state.mode });
+  updateDownloadEnabled();
   if (!state.payload || !state.payload.groups.length) {
     renderBanner(bannerEl, bannerText, { fallbackCount: 0 });
     summaryEl.textContent = '';
@@ -237,8 +241,35 @@ function paint() {
 }
 
 function applyTheme(theme) {
-  state.theme = theme;
-  document.documentElement.setAttribute('data-theme', theme);
+  // Only light / dark now. Anything else (legacy 'auto') resolves to light.
+  const t = theme === 'dark' ? 'dark' : 'light';
+  state.theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  if (themeEl) {
+    themeEl.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+}
+
+function updateDownloadEnabled() {
+  if (!downloadEl) return;
+  const has = !!(state.payload && state.payload.groups && state.payload.groups.length);
+  downloadEl.disabled = !has;
+}
+
+function downloadTokens() {
+  if (!state.payload || !state.payload.groups?.length) return;
+  const doc = toTokenDoc(state.payload, { generatedAt: new Date().toISOString() });
+  const json = JSON.stringify(doc, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = tokenFilename(state.payload, 'json');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast(`Downloaded ${doc.styleCount} type styles`);
 }
 
 function bindHeader() {
@@ -253,13 +284,14 @@ function bindHeader() {
     paint();
   });
 
-  for (const t of ['auto', 'light', 'dark']) {
-    document.getElementById(`fl-theme-${t}`).addEventListener('click', async () => {
-      applyTheme(t);
-      await saveTheme(t);
-      paint();
-    });
-  }
+  // Single theme toggle: flip light ↔ dark.
+  themeEl?.addEventListener('click', async () => {
+    const next = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    await saveTheme(next);
+  });
+
+  downloadEl?.addEventListener('click', downloadTokens);
 }
 
 function bindKeyboard() {
