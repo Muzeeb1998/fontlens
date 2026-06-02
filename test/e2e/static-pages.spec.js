@@ -71,8 +71,9 @@ test.describe('sidepanel/panel.html', () => {
     await expect(page.locator('#fl-mode-inspect')).toHaveAttribute('aria-pressed', 'false');
     await expect(page.locator('#fl-theme-toggle')).toBeVisible();
     await expect(page.locator('#fl-download')).toBeDisabled(); // no payload yet
-    await expect(page.locator('.fl-empty')).toBeVisible();
-    await expect(page.locator('.fl-empty')).toContainText('Hover any text');
+    await expect(page.locator('.fl-empty-state')).toBeVisible();
+    await expect(page.locator('.fl-empty-title')).toContainText('Pin a font');
+    await expect(page.locator('.fl-empty-sub')).toContainText('Hover any text');
 
     // chrome.* calls reject silently outside the extension — no console errors expected
     expect(errors.get('panel') || []).toEqual([]);
@@ -89,13 +90,15 @@ test.describe('sidepanel/panel.html', () => {
   test('hover mode shows pin prompt; inspect mode shows full-page hint', async ({ page }) => {
     await page.setViewportSize({ width: 380, height: 800 });
     await page.goto('/sidepanel/panel.html');
-    // Default hover mode: empty-state prompt to pin cards.
-    await expect(page.locator('.fl-empty')).toContainText('Hover any text');
+    // Default hover mode: illustrated empty-state prompt to pin cards.
+    await expect(page.locator('.fl-empty-sub')).toContainText('Hover any text');
+    await expect(page.locator('.fl-empty-illo svg')).toBeVisible();
     await expect(page.locator('#fl-hint')).toBeHidden();
-    // Switch to inspect: contextual hint appears.
+    // Switch to inspect: contextual hint + inspect illustration.
     await page.click('#fl-mode-inspect');
     await expect(page.locator('#fl-hint')).toBeVisible();
     await expect(page.locator('#fl-hint')).toContainText('every type style used on this page');
+    await expect(page.locator('.fl-empty-title')).toContainText('Scanning this page');
   });
 
   test('single theme icon flips data-theme light↔dark', async ({ page }) => {

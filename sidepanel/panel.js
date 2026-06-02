@@ -302,16 +302,56 @@ function paint() {
   annotateApproximateTailwind();
 }
 
+const ILLO_HOVER = `
+<svg viewBox="0 0 96 96" width="96" height="96" fill="none" aria-hidden="true">
+  <rect x="14" y="20" width="56" height="40" rx="6"
+        stroke="currentColor" stroke-width="2" opacity="0.45"/>
+  <path d="M27 34h30M27 42h22M27 50h16" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" opacity="0.45"/>
+  <!-- cursor -->
+  <path d="M52 50l22 9-9 3-3 9-10-21z" fill="currentColor"/>
+  <path d="M52 50l22 9-9 3-3 9-10-21z" stroke="var(--bg)" stroke-width="1.5"
+        stroke-linejoin="round"/>
+</svg>`;
+
+const ILLO_INSPECT = `
+<svg viewBox="0 0 96 96" width="96" height="96" fill="none" aria-hidden="true">
+  <path d="M20 24h44M20 34h44M20 44h30M20 54h44M20 64h24"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <!-- magnifier -->
+  <circle cx="58" cy="50" r="16" stroke="currentColor" stroke-width="3"
+          fill="var(--bg)"/>
+  <path d="M58 44v12M52 50h12" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" opacity="0.6"/>
+  <path d="M70 62l10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+</svg>`;
+
 function renderEmptyForMode() {
   regionEl.innerHTML = '';
-  const p = document.createElement('p');
-  p.className = 'fl-empty';
+  const box = document.createElement('div');
+  box.className = 'fl-empty-state';
+
+  const illo = document.createElement('div');
+  illo.className = 'fl-empty-illo';
+  const title = document.createElement('p');
+  title.className = 'fl-empty-title';
+  const sub = document.createElement('p');
+  sub.className = 'fl-empty-sub';
+
   if (state.mode === 'inspect') {
-    p.textContent = 'Scanning the page… click anywhere if nothing appears.';
+    illo.innerHTML = ILLO_INSPECT;
+    title.textContent = 'Scanning this page';
+    sub.textContent = 'Every font and type style in use will appear here. Click any text if nothing shows.';
   } else {
-    p.textContent = 'Hover any text on the page, then click to pin its card here.';
+    illo.innerHTML = ILLO_HOVER;
+    title.textContent = 'Pin a font to start';
+    sub.textContent = 'Hover any text on the page, then click to pin its card here. Pin as many as you like.';
   }
-  regionEl.appendChild(p);
+
+  box.appendChild(illo);
+  box.appendChild(title);
+  box.appendChild(sub);
+  regionEl.appendChild(box);
 }
 
 function applyTheme(theme) {

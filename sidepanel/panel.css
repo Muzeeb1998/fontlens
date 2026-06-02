@@ -232,6 +232,34 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   text-align: center;
   font-size: var(--t-sm);
 }
+
+/* ===== Illustrated empty state ===== */
+.fl-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--s-8) var(--s-7);
+  margin-top: var(--s-8);
+}
+.fl-empty-illo {
+  color: var(--fg-faint);
+  margin-bottom: var(--s-5);
+}
+.fl-empty-illo svg { display: block; }
+.fl-empty-title {
+  margin: 0 0 var(--s-2);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  color: var(--fg);
+}
+.fl-empty-sub {
+  margin: 0;
+  max-width: 240px;
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
 .fl-truncated {
   padding: var(--s-3) var(--s-6);
   color: var(--fg-faint);
