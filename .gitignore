@@ -16,3 +16,5 @@ store/screenshots/*.png
 .gstack/
 test-results/
 playwright-report/
+vault/.obsidian/workspace*.json
+vault/.obsidian/cache
