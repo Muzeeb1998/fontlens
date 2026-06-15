@@ -71,3 +71,41 @@ test('content script injects into demo and chip appears on hover', async () => {
   expect(chipState.display).not.toBe('none');
   expect(chipState.line1, 'chip line 1 should show rendered font name').toBeTruthy();
 });
+
+test('closing the panel tears down the page overlay (panel-close fix)', async () => {
+  const demo = await context.newPage();
+  await demo.goto(demoUrl);
+  await demo.bringToFront();
+  await demo.waitForLoadState('networkidle');
+  await demo.waitForFunction(() => !!document.querySelector('fontlens-overlay'), { timeout: 5000 });
+
+  // The tab the (simulated) panel is bound to.
+  const demoTabId = await sw.evaluate(async () => {
+    const [t] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    return t?.id ?? null;
+  });
+  expect(demoTabId).not.toBeNull();
+
+  // Stand in for the side panel: an extension-origin page that opens the
+  // same Port the panel opens, reports the bound tabId, then closes.
+  const panelStub = await context.newPage();
+  await panelStub.goto(`chrome-extension://${extId}/sidepanel/panel.html`);
+  await panelStub.evaluate((tabId) => {
+    const port = chrome.runtime.connect({ name: 'fontlens-panel' });
+    port.postMessage({ tabId });
+  }, demoTabId);
+  await panelStub.waitForTimeout(200);
+
+  // Close the panel stub → Port disconnects in SW → disable sent to demo tab.
+  await panelStub.close();
+
+  // Overlay on the demo tab must disappear.
+  await demo.waitForFunction(
+    () => !document.querySelector('fontlens-overlay'),
+    { timeout: 5000 },
+  );
+  const stillThere = await demo.evaluate(() => !!document.querySelector('fontlens-overlay'));
+  expect(stillThere).toBe(false);
+
+  await demo.close();
+});

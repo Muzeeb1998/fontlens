@@ -58,6 +58,27 @@ describe('ContentScript — wiring', () => {
     expect(cs.overlay.getMode()).toBe('inspect');
   });
 
+  it('fontlens:disable message tears down overlay AND stops hover firing (panel-close fix)', () => {
+    const msg = fakeMessaging();
+    cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });
+    cs.enable();
+
+    const p = document.createElement('p');
+    p.textContent = 'hello';
+    document.body.appendChild(p);
+    document.elementFromPoint = () => p;
+
+    // Panel closes → SW sends disable.
+    msg._emit({ type: 'fontlens:disable' });
+    expect(document.body.querySelector('fontlens-overlay')).toBeNull();
+
+    // A mousemove after disable must NOT re-detect or re-mount.
+    fakeDetect.mockClear();
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 10, clientY: 20 }));
+    expect(fakeDetect).not.toHaveBeenCalled();
+    expect(document.body.querySelector('fontlens-overlay')).toBeNull();
+  });
+
   it('throttles mousemove to one render per animation frame', () => {
     const msg = fakeMessaging();
     const rafCalls = [];

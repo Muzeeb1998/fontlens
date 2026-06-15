@@ -91,3 +91,26 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   })();
   return true; // async
 });
+
+// Side-panel lifetime tracking. The panel opens a Port on load; when the
+// panel closes (user dismisses it, switches away, navigates) the Port
+// disconnects here. We then tell the content script on the tab the panel
+// was bound to, to tear down its overlay + listeners — otherwise the hover
+// chip keeps firing on the page after the panel is gone.
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'fontlens-panel') return;
+  // The panel sends its bound tabId as the first message on the port.
+  let boundTabId = null;
+  port.onMessage.addListener((msg) => {
+    if (msg && typeof msg.tabId === 'number') boundTabId = msg.tabId;
+  });
+  port.onDisconnect.addListener(async () => {
+    let tabId = boundTabId;
+    if (tabId == null) {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      tabId = tab?.id ?? null;
+    }
+    if (tabId == null) return;
+    try { await chrome.tabs.sendMessage(tabId, { type: 'fontlens:disable' }); } catch {}
+  });
+});

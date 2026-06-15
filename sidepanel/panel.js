@@ -514,6 +514,21 @@ async function ensureContent() {
   } catch {}
 }
 
+// Open a Port to the service worker that lives for the panel's lifetime.
+// When the panel closes, the Port disconnects in the SW, which tells the
+// content script to tear down its overlay — so the hover chip stops firing
+// once the panel is gone. We send the bound tabId up the port so the SW
+// targets the right tab even if focus moves before close.
+function bindPanelLifetime() {
+  if (typeof chrome === 'undefined' || !chrome.runtime?.connect) return;
+  try {
+    const port = chrome.runtime.connect({ name: 'fontlens-panel' });
+    chrome.tabs?.query?.({ active: true, lastFocusedWindow: true }).then(([tab]) => {
+      if (tab?.id != null) { try { port.postMessage({ tabId: tab.id }); } catch {} }
+    }).catch(() => {});
+  } catch {}
+}
+
 (async function init() {
   state.theme = await loadTheme();
   applyTheme(state.theme);
@@ -530,6 +545,7 @@ async function ensureContent() {
   bindKeyboard();
   bindMessages();
   bindFocusRehydrate();
+  bindPanelLifetime();
   paint();
   // Two paths to receive the first payload:
   //   a) If the content script is already loaded (toolbar click ran it),
