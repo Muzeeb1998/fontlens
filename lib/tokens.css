@@ -37,6 +37,12 @@
   --s-1: 4px; --s-2: 6px; --s-3: 8px; --s-4: 10px;
   --s-5: 12px; --s-6: 14px; --s-7: 18px; --s-8: 24px;
 
+  /* Specimen preview size — one consistent size everywhere a sample line
+     renders in the detected face (panel rows + expanded card). */
+  --specimen-size: 19px;
+  /* Card elevation on hover */
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+
   --font-ui:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
@@ -62,6 +68,7 @@
   --amber-fg-on-amber: #1a1100;
   --toggle-active-bg: var(--border-strong);
   --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-card:     0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -83,5 +90,6 @@
     --amber-fg-on-amber: #1a1100;
     --toggle-active-bg: var(--border-strong);
     --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
+    --shadow-card:     0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
   }
 }

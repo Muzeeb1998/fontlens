@@ -34,25 +34,26 @@ const STYLE_CSS = `
 @media (prefers-color-scheme: dark) { .viewmore { color:#5fa8ff; } }
 
 /* ---------- expanded detail card ---------- */
-.exp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.exp-title { font-weight: 600; font-size: 14px; line-height: 1.2; }
-.exp-sub { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; color: #6b6b6e; margin-top: 2px; }
+.exp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #ececec; }
+@media (prefers-color-scheme: dark) { .exp-head { border-bottom-color:#26262a; } }
+.exp-title { font-weight: 650; font-size: 15px; line-height: 1.25; letter-spacing: -0.01em; }
+.exp-sub { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; color: #6b6b6e; margin-top: 3px; font-variant-numeric: tabular-nums; }
 @media (prefers-color-scheme: dark) { .exp-sub { color:#a1a1a6; } }
-.exp-close { background: none; border: 0; color: #6b6b6e; cursor: pointer; font: 600 16px/1 -apple-system; padding: 2px 6px; border-radius: 4px; }
+.exp-close { flex: 0 0 auto; background: none; border: 0; color: #9c9ca0; cursor: pointer; font: 400 18px/1 -apple-system; width: 24px; height: 24px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
 .exp-close:hover, .exp-close:focus-visible { background: #f4f4f5; color: #0f0f10; outline: none; }
 @media (prefers-color-scheme: dark) {
-  .exp-close { color:#a1a1a6; }
+  .exp-close { color:#6b6b6e; }
   .exp-close:hover, .exp-close:focus-visible { background:#1f1f22; color:#f5f5f7; }
 }
-.exp-grid { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.exp-grid { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
 .exp-cell { min-width: 0; }
-.exp-label { font: 600 9px/1.2 -apple-system; text-transform: uppercase; letter-spacing: 0.06em; color: #6b6b6e; margin-bottom: 4px; }
-@media (prefers-color-scheme: dark) { .exp-label { color:#a1a1a6; } }
-.exp-value { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: #0f0f10; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exp-label { font: 600 9px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; color: #9c9ca0; margin-bottom: 5px; }
+@media (prefers-color-scheme: dark) { .exp-label { color:#6b6b6e; } }
+.exp-value { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.3; color: #0f0f10; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (prefers-color-scheme: dark) { .exp-value { color:#f5f5f7; } }
-.exp-color-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid #ececec; margin-right: 6px; vertical-align: -2px; }
-@media (prefers-color-scheme: dark) { .exp-color-swatch { border-color:#26262a; } }
-.exp-specimen { margin-top: 12px; padding-top: 12px; border-top: 1px solid #ececec; font-size: 18px; line-height: 1.4; word-break: break-word; }
+.exp-color-swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.12); margin-right: 7px; vertical-align: -1px; }
+@media (prefers-color-scheme: dark) { .exp-color-swatch { border-color: rgba(255,255,255,0.15); } }
+.exp-specimen { margin-top: 16px; padding-top: 14px; border-top: 1px solid #ececec; font-size: 22px; line-height: 1.35; letter-spacing: -0.01em; word-break: break-word; }
 @media (prefers-color-scheme: dark) { .exp-specimen { border-top-color:#26262a; } }
 
 .outline { position: absolute; top: 0; left: 0; border: 2px solid #0f0f10; border-radius: 4px; pointer-events: none; transition: transform 60ms cubic-bezier(0.2, 0, 0, 1), width 60ms cubic-bezier(0.2, 0, 0, 1), height 60ms cubic-bezier(0.2, 0, 0, 1); }

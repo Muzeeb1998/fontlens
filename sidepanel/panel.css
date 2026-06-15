@@ -131,10 +131,15 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
 /* ===== Family card (DESIGN.md §6.4) ===== */
 .fl-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--bg);
-  margin: var(--s-3) 0;
+  margin: var(--s-4) 0;
   overflow: hidden;
+  transition: box-shadow 140ms ease-out, border-color 140ms ease-out;
+}
+.fl-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card);
 }
 .fl-card.is-fallback {
   border-color: var(--amber-border);
@@ -145,33 +150,36 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  padding: var(--s-5);
+  padding: var(--s-4) var(--s-5);
   border-bottom: 1px solid var(--border);
 }
 .fl-card.is-fallback .fl-card-head { border-bottom-color: var(--amber-border); }
 .fl-card-name {
-  font-weight: 600;
-  font-size: var(--t-md);
+  font-weight: 650;
+  font-size: var(--t-lg);
+  letter-spacing: -0.01em;
   color: var(--fg);
 }
 .fl-card.is-fallback .fl-card-name { color: var(--amber-fg); }
 .fl-card-meta {
   font-family: var(--font-mono);
-  font-size: var(--t-sm);
-  color: var(--fg-muted);
+  font-size: var(--t-xs);
+  color: var(--fg-faint);
   margin-left: auto;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 /* ===== Badge (DESIGN.md §6.6) ===== */
 .fl-badge {
-  display: inline-block;
-  padding: 2px var(--s-2);
-  font-size: var(--t-xs);
-  line-height: var(--lh-xs);
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  font-size: 9px;
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 4px;
+  letter-spacing: 0.07em;
+  border-radius: 999px;
   background: var(--bg-subtle);
   color: var(--fg-muted);
   font-weight: 600;
@@ -182,29 +190,32 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
 /* ===== Style row (DESIGN.md §6.5) ===== */
 .fl-row {
   display: grid;
-  grid-template-columns: 60px 1fr auto;
+  grid-template-columns: 52px 1fr auto;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--s-4);
   padding: var(--s-4) var(--s-5);
-  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   cursor: default;
   outline: none;
 }
-.fl-row:last-child { border-bottom: 0; }
+.fl-card-head + .fl-row { border-top: 0; }
+.fl-card.is-fallback .fl-row { border-top-color: var(--amber-border); }
 .fl-row:hover,
 .fl-row:focus-visible { background: var(--bg-muted); }
-.fl-row:focus-visible { box-shadow: inset 0 0 0 2px var(--border-strong); }
+.fl-row:focus-visible { box-shadow: inset 2px 0 0 var(--accent); }
 
 .fl-row-role {
-  font-size: var(--t-xs);
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fg-muted);
+  letter-spacing: 0.08em;
+  color: var(--fg-faint);
   font-weight: 600;
 }
 .fl-row-specimen {
-  font-size: var(--t-xl);
-  line-height: 1.15;
+  font-size: var(--specimen-size);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -214,11 +225,13 @@ button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 
   font-size: var(--t-sm);
   color: var(--fg-muted);
   font-variant-numeric: tabular-nums;
-  margin-top: 2px;
+  margin-top: 3px;
+  letter-spacing: 0;
 }
 .fl-row-count {
-  padding: 2px var(--s-2);
-  font-size: var(--t-xs);
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
   border-radius: 999px;
   background: var(--bg-subtle);
   color: var(--fg-muted);
