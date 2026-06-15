@@ -1,49 +1,32 @@
-# Screenshots — how to render
+# Screenshots
 
-Five 1280×800 PNG screenshots are required by the Chrome Web Store. They are
-generated from the fixture HTML pages in `fixtures/` rather than from the
-loaded extension because the store needs deterministic captures.
-
-## Quick path (manual — no extra deps)
-
-1. Open Chrome at 1280×800 (DevTools → Toggle Device Toolbar → enter 1280×800).
-2. Open each fixture URL (use `npm run harness` from repo root, then visit
-   `http://localhost:5173/../../store/screenshots/fixtures/1-hero-fallback.html`)
-   or open the file:// URL directly.
-3. Take a full-viewport screenshot (DevTools → ⋮ → "Capture screenshot" or
-   Cmd+Shift+P → "Capture full size screenshot").
-4. Save into `store/screenshots/` with the matching name.
-
-Required output files:
-
-- `1-hero-fallback.png`
-- `2-side-panel.png`
-- `3-tailwind-toast.png`
-- `4-variable-axis.png`
-- `5-fallback-banner.png`
-
-## Automated path (optional)
-
-If you want headless rendering, install puppeteer locally:
+The four 1280×800 store screenshots here are **generated from the real
+extension UI** (the actual `render.js` panel + `overlay.js` cards), not from
+mockups. They regenerate deterministically:
 
 ```bash
-npm install --save-dev puppeteer
+npm run build:store
 ```
 
-Then run a small renderer (template at `docs/plans/2026-05-31-phase6-store-launch.md`
-§5 — `build/render-screenshots.js`). Skipped from the default toolchain
-because the puppeteer binary is ~170MB and platform-specific.
+That command (`build/render-store-assets.js`) spins up a local static server,
+renders each scene at 2× device-scale through headless Chromium, and writes:
 
-## What each fixture shows
+| File | 1280×800 scene |
+|------|----------------|
+| `1-pin-multiple.png` | Multi-card pinning cascading over an article — the headline interaction |
+| `2-type-system.png` | Side panel, full page type system, fallback-first (light) |
+| `3-fallback-signal.png` | The wedge: amber fallback signal + page banner (dark) |
+| `4-hover-detail.png` | Hover chip + expanded detail card with live specimen |
 
-| Fixture | What it captures |
-|---------|------------------|
-| `1-hero-fallback.html` | Hover chip with amber fallback dot floating over an article. Marketing asset. |
-| `2-side-panel.html` | Hybrid layout: 2-3 family cards, one with the fallback border. |
-| `3-tailwind-toast.html` | Toast "Copied as Tailwind" visible bottom-right. |
-| `4-variable-axis.html` | Variable-font slider mid-drag, specimen reflowing. |
-| `5-fallback-banner.html` | Page-level amber banner at top of side panel. |
+Promo tiles are written by the same command to `store/promo/`:
+`small-tile-440x280.png`, `marquee-1400x560.png`.
 
-Fixtures 2-5 currently use the same minimal frame stub. For Launch 1 the
-hero (1) is the only one that absolutely must be perfect; the others can be
-captured live from the loaded extension on a real demo page if needed.
+Upload screenshots in order 1→4. See [`../PUBLISH.md`](../PUBLISH.md) for the
+full submission flow.
+
+## Editing a scene
+
+Scene markup + captions live in `build/render-store-assets.js`
+(`panelScene`, `articleScene`, `promoSVG`). Edit there and re-run
+`npm run build:store`. No manual capture, no extra dependencies beyond the
+`@playwright/test` Chromium the repo already uses for e2e.

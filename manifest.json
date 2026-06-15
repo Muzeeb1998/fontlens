@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "FontLens — Font Inspector & Fallback Detector",
   "version": "1.0.0",
+  "description": "Inspect any page's fonts and catch silent fallbacks. Copy styles as CSS, Tailwind, or design tokens. 100% local, zero network.",
   "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
   "background": { "service_worker": "service-worker.js", "type": "module" },
   "side_panel": { "default_path": "sidepanel/panel.html" },

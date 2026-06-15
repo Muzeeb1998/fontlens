@@ -11,8 +11,8 @@ test/harness/fonts/*.woff2
 test/harness/fonts/*.woff
 test/harness/fonts/*.ttf
 !test/harness/fonts/.gitkeep
-dist/
-store/screenshots/*.png
+# store/screenshots + store/promo PNGs are generated deterministically by
+# `npm run build:store` and committed as Web Store deliverables.
 .gstack/
 test-results/
 playwright-report/
