@@ -398,17 +398,28 @@ describe('Overlay — compact vs expanded chip', () => {
     expect(overlay._chip.style.display).toBe('none');
   });
 
-  it('repeated show() on same element does NOT re-position the chip (anti-chase)', () => {
+  it('chip follows the cursor on the same element (no freeze/lag)', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
     const el = document.createElement('p');
     overlay.show(el, { x: 100, y: 100 });
     const firstTransform = overlay._chip.style.transform;
     overlay.show(el, { x: 500, y: 500 }); // cursor moved, same element
-    expect(overlay._chip.style.transform).toBe(firstTransform);
+    expect(overlay._chip.style.transform).not.toBe(firstTransform); // repositioned
   });
 
-  it('show() on a DIFFERENT element does re-position the chip', () => {
+  it('same-element re-show does NOT re-run detect (cheap follow)', () => {
+    const detect = vi.fn(() => baseDetail());
+    overlay = new Overlay({ detect, onEmit: () => {} });
+    overlay.mount();
+    const el = document.createElement('p');
+    overlay.show(el, { x: 100, y: 100 });
+    const callsAfterFirst = detect.mock.calls.length;
+    overlay.show(el, { x: 300, y: 300 });
+    expect(detect.mock.calls.length).toBe(callsAfterFirst); // no extra detect
+  });
+
+  it('show() on a DIFFERENT element re-positions the chip', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
     const a = document.createElement('p');

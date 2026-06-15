@@ -326,16 +326,19 @@ export class Overlay {
     if (!this._host) this.mount();
     if (this._pinned) return;
 
-    // Freeze position while the user is still over the same element so they
-    // can move toward the chip (e.g. to click "View more") without it
-    // running away. Reposition only when the element under cursor changes.
+    // Always follow the cursor (cheap transform) so the chip tracks
+    // smoothly — never freeze on a large element, that read as lag.
+    // Only the EXPENSIVE work (detect + re-render) is skipped when the
+    // element under the cursor hasn't changed. Reachability of "View more"
+    // is handled by content.js: once the pointer is over the chip itself,
+    // it's our own UI and show() stops being called, so the chip settles.
     const sameEl = this._lastDetail?.el === el;
     const detail = sameEl && this._lastDetail?.detail
       ? this._lastDetail.detail
       : this._detect(el);
     this._lastDetail = { detail, el, cursor };
     if (!sameEl) this._renderChip(detail);
-    if (!sameEl) this._position(cursor);
+    this._position(cursor);
   }
 
   hide() {
