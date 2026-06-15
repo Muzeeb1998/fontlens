@@ -85,10 +85,11 @@ export class ContentScript {
     this._nodesByStyle = new Map();     // styleKey → Element[] (for axis sliders)
     this._originalAxes = new WeakMap(); // Element → original fontVariationSettings string
 
-    this._onMouseMove = this._onMouseMove.bind(this);
-    this._onClick     = this._onClick.bind(this);
-    this._onKeyDown   = this._onKeyDown.bind(this);
-    this._onMessage   = this._onMessage.bind(this);
+    this._onMouseMove  = this._onMouseMove.bind(this);
+    this._onClick      = this._onClick.bind(this);
+    this._onKeyDown    = this._onKeyDown.bind(this);
+    this._onMessage    = this._onMessage.bind(this);
+    this._onPageLeave  = this._onPageLeave.bind(this);
   }
 
   enable() {
@@ -98,6 +99,9 @@ export class ContentScript {
     window.addEventListener('mousemove', this._onMouseMove, true);
     window.addEventListener('click',     this._onClick,     true);
     window.addEventListener('keydown',   this._onKeyDown,   true);
+    // Hide the floating chip when the cursor leaves the page / window.
+    document.addEventListener('mouseout', this._onPageLeave, true);
+    window.addEventListener('blur',       this._onPageLeave, true);
     this._messaging.onMessage(this._onMessage);
     this._enabled = true;
   }
@@ -107,8 +111,16 @@ export class ContentScript {
     window.removeEventListener('mousemove', this._onMouseMove, true);
     window.removeEventListener('click',     this._onClick,     true);
     window.removeEventListener('keydown',   this._onKeyDown,   true);
+    document.removeEventListener('mouseout', this._onPageLeave, true);
+    window.removeEventListener('blur',       this._onPageLeave, true);
     this.overlay.unmount();
     this._enabled = false;
+  }
+
+  _onPageLeave(ev) {
+    // blur has no relatedTarget; mouseout to null relatedTarget = left window.
+    if (ev && ev.type === 'mouseout' && ev.relatedTarget !== null) return;
+    this.overlay.hideIfFloating();
   }
 
   _onMouseMove(ev) {

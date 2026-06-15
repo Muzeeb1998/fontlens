@@ -42,6 +42,31 @@ describe('ContentScript — wiring', () => {
     expect(cs.overlay.getMode()).toBe('hover');
   });
 
+  it('hides the floating chip when the cursor leaves the window (mouseout → null)', () => {
+    const msg = fakeMessaging();
+    cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });
+    cs.enable();
+    const p = document.createElement('p'); p.textContent = 'hi'; document.body.appendChild(p);
+    cs.overlay.show(p, { x: 10, y: 10 });
+    expect(cs.overlay._chip.style.display).not.toBe('none');
+    // pointer leaves the window
+    window.dispatchEvent(new Event('blur'));
+    expect(cs.overlay._chip.style.display).toBe('none');
+  });
+
+  it('does NOT hide on mouseout that stays inside the page', () => {
+    const msg = fakeMessaging();
+    cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });
+    cs.enable();
+    const p = document.createElement('p'); p.textContent = 'hi'; document.body.appendChild(p);
+    cs.overlay.show(p, { x: 10, y: 10 });
+    // mouseout with a relatedTarget = moved to another element, still on page
+    const ev = new MouseEvent('mouseout', { bubbles: true });
+    Object.defineProperty(ev, 'relatedTarget', { value: document.body });
+    document.dispatchEvent(ev);
+    expect(cs.overlay._chip.style.display).not.toBe('none');
+  });
+
   it('disable() unmounts the overlay and removes listeners', () => {
     const msg = fakeMessaging();
     cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });

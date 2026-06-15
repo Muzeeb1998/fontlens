@@ -6,7 +6,7 @@ const STYLE_CSS = `
 :host([data-pinned="true"]) { pointer-events: auto; }
 
 /* ---------- compact chip ---------- */
-.chip { position: absolute; top: 0; left: 0; min-width: 140px; max-width: 280px; padding: 10px 12px; background: #ffffff; color: #0f0f10; border: 1px solid #ececec; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); pointer-events: auto; user-select: none; transform: translate3d(0,0,0); transition: transform 80ms cubic-bezier(0.2, 0, 0, 1); will-change: transform; }
+.chip { position: absolute; top: 0; left: 0; min-width: 140px; max-width: 280px; padding: 10px 12px; background: #ffffff; color: #0f0f10; border: 1px solid #ececec; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); pointer-events: auto; user-select: none; transform: translate3d(0,0,0); will-change: transform; }
 .chip[data-pinned="true"] { outline: 2px solid #d4d4d8; outline-offset: 2px; }
 /* When expanded the chip is pinned (no cursor-follow), so drop the
    compositor-layer promotion — it softens text on HiDPI. Crisp render. */
@@ -339,6 +339,14 @@ export class Overlay {
     this._lastDetail = { detail, el, cursor };
     if (!sameEl) this._renderChip(detail);
     this._position(cursor);
+  }
+
+  // Hide only a free-floating chip (cursor left the page). Never closes a
+  // pinned or expanded card — those are deliberate user state.
+  hideIfFloating() {
+    if (this._pinned || this._expanded) return;
+    if (this._chip) this._chip.style.display = 'none';
+    this._lastDetail = null; // force re-detect+reposition on next enter
   }
 
   hide() {
