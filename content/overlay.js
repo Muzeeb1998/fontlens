@@ -8,7 +8,9 @@ const STYLE_CSS = `
 /* ---------- compact chip ---------- */
 .chip { position: absolute; top: 0; left: 0; min-width: 140px; max-width: 280px; padding: 10px 12px; background: #ffffff; color: #0f0f10; border: 1px solid #ececec; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); pointer-events: auto; user-select: none; transform: translate3d(0,0,0); transition: transform 80ms cubic-bezier(0.2, 0, 0, 1); will-change: transform; }
 .chip[data-pinned="true"] { outline: 2px solid #d4d4d8; outline-offset: 2px; }
-.chip[data-expanded="true"] { min-width: 280px; max-width: 340px; padding: 14px 16px; }
+/* When expanded the chip is pinned (no cursor-follow), so drop the
+   compositor-layer promotion — it softens text on HiDPI. Crisp render. */
+.chip[data-expanded="true"] { min-width: 280px; max-width: 340px; padding: 14px 16px; will-change: auto; transition: none; }
 @media (prefers-color-scheme: dark) {
   .chip { background:#0e0e10; color:#f5f5f7; border-color:#26262a; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
   .chip[data-pinned="true"] { outline-color:#3a3a3f; }

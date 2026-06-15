@@ -43,6 +43,16 @@
   outline-offset: 2px;
 }
 
+/* Expanded detail card is pinned (no cursor-follow). Drop the compositor
+   layer promotion so text stays crisp on HiDPI. */
+.chip[data-expanded="true"] {
+  min-width: 280px;
+  max-width: 340px;
+  padding: 14px 16px;
+  will-change: auto;
+  transition: none;
+}
+
 @media (prefers-color-scheme: dark) {
   .chip {
     background: #0e0e10;
