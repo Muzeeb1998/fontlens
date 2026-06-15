@@ -48,7 +48,7 @@ const STYLE_CSS = `
 .exp-cell { min-width: 0; }
 .exp-label { font: 600 9px/1.2 -apple-system; text-transform: uppercase; letter-spacing: 0.06em; color: #6b6b6e; margin-bottom: 4px; }
 @media (prefers-color-scheme: dark) { .exp-label { color:#a1a1a6; } }
-.exp-value { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: #0f0f10; font-variant-numeric: tabular-nums; word-break: break-word; }
+.exp-value { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: #0f0f10; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (prefers-color-scheme: dark) { .exp-value { color:#f5f5f7; } }
 .exp-color-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid #ececec; margin-right: 6px; vertical-align: -2px; }
 @media (prefers-color-scheme: dark) { .exp-color-swatch { border-color:#26262a; } }
@@ -253,6 +253,7 @@ export class Overlay {
       lab.textContent = label;
       const val = document.createElement('div');
       val.className = 'exp-value';
+      val.title = String(value); // full string on hover when truncated
       if (sw) {
         const s = document.createElement('span');
         s.className = 'exp-color-swatch';

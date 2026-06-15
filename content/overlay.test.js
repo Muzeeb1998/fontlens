@@ -364,6 +364,19 @@ describe('Overlay — compact vs expanded chip', () => {
     expect(labels).toEqual(['Family', 'Style', 'Weight', 'Color', 'Size', 'Line Height']);
   });
 
+  it('value cells carry a title tooltip with the full string (long-family-name fix, TC-B7.2)', () => {
+    overlay = new Overlay({
+      detect: () => ({ ...baseDetail(), rendered: 'AVeryLongUnbreakableFontFamilyName' }),
+      onEmit: () => {},
+    });
+    overlay.mount();
+    overlay.show(document.createElement('p'), { x: 50, y: 50 });
+    overlay._setExpanded(true);
+    const familyVal = overlay._chip.querySelector('.exp-value');
+    expect(familyVal.title).toBe('AVeryLongUnbreakableFontFamilyName');
+    expect(familyVal.textContent).toContain('AVeryLongUnbreakableFontFamilyName');
+  });
+
   it('close button collapses + hides the chip', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
