@@ -303,14 +303,17 @@ function paint() {
 }
 
 const ILLO_HOVER = `
-<svg viewBox="0 0 96 96" width="96" height="96" fill="none" aria-hidden="true">
-  <rect x="14" y="20" width="56" height="40" rx="6"
-        stroke="currentColor" stroke-width="2" opacity="0.45"/>
-  <path d="M27 34h30M27 42h22M27 50h16" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" opacity="0.45"/>
-  <!-- cursor -->
-  <path d="M52 50l22 9-9 3-3 9-10-21z" fill="currentColor"/>
-  <path d="M52 50l22 9-9 3-3 9-10-21z" stroke="var(--bg)" stroke-width="1.5"
+<svg viewBox="0 0 96 96" width="80" height="80" fill="none" aria-hidden="true">
+  <!-- specimen tile: the font you're about to pin -->
+  <rect x="16" y="14" width="56" height="50" rx="13"
+        stroke="currentColor" stroke-width="2" opacity="0.32"/>
+  <text x="44" y="47" text-anchor="middle" dominant-baseline="central"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="27" font-weight="600" fill="currentColor" opacity="0.72">Aa</text>
+  <!-- click ripple + cursor -->
+  <circle cx="60" cy="60" r="12" stroke="currentColor" stroke-width="2" opacity="0.22"/>
+  <path d="M53 53l21 8-8.5 3.2-3.2 8.5L53 53z" fill="currentColor"/>
+  <path d="M53 53l21 8-8.5 3.2-3.2 8.5L53 53z" stroke="var(--bg)" stroke-width="1.6"
         stroke-linejoin="round"/>
 </svg>`;
 
