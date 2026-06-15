@@ -15,7 +15,7 @@ renders each scene at 2× device-scale through headless Chromium, and writes:
 |------|----------------|
 | `1-pin-multiple.png` | Multi-card pinning cascading over an article — the headline interaction |
 | `2-type-system.png` | Side panel, full page type system, fallback-first (light) |
-| `3-fallback-signal.png` | The wedge: amber fallback signal + page banner (dark) |
+| `3-one-click-install.png` | One-click install: Chrome Web Store mock + step guide (white) |
 | `4-hover-detail.png` | Hover chip + expanded detail card with live specimen |
 
 Promo tiles are written by the same command to `store/promo/`:

@@ -165,6 +165,85 @@ const D = (over = {}) => ({
   confidence: 'high', ...over,
 });
 
+// A white "one-click install" marketing scene: step list on the left, a
+// Chrome-Web-Store browser mock on the right, plus a floating ready-toast.
+function installScene() {
+  const mark = (s) => `<svg viewBox="0 0 128 128" width="${s}" height="${s}"><rect x="6" y="6" width="116" height="116" rx="30" fill="#F59E0B"/><path d="M 84 30 Q 58 30 58 56 L 58 60 L 42 60 L 42 76 L 58 76 L 58 104 L 74 104 L 74 76 L 92 76 L 92 60 L 74 60 L 74 56 Q 74 46 84 46 L 94 46 L 94 30 Z" fill="#0F0F10"/></svg>`;
+  const step = (n, label, active) => `
+    <div style="display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:12px;border:1px solid ${active ? '#f7e3b9' : '#ececec'};background:${active ? '#fff8eb' : '#ffffff'};box-shadow:0 1px 2px rgba(0,0,0,.03)">
+      <span style="flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:${active ? '#f59e0b' : '#f1f1f3'};color:${active ? '#0f0f10' : '#6b6b6e'}">${n}</span>
+      <span style="flex:1;font-size:16px;font-weight:500;color:#0f0f10">${label}</span>
+      <span style="color:#c4c4c8;font-size:16px">›</span>
+    </div>`;
+  const chip = (t) => `<span style="font-size:14px;color:#6b6b6e">${t}</span>`;
+  const dot = `<span style="color:#c4c4c8">·</span>`;
+  const meta = (k, v) => `<div><div style="font-size:11px;letter-spacing:0.08em;color:#9c9ca0;font-weight:600;margin-bottom:5px">${k}</div><div style="font-size:15px;font-weight:600;color:#0f0f10">${v}</div></div>`;
+  return `<!doctype html><meta charset=utf8>
+  <body style="margin:0;width:1280px;height:800px;background:#f5f6f8;font-family:${FONT};overflow:hidden;position:relative">
+    <div style="display:flex;align-items:center;height:800px;padding:0 64px;box-sizing:border-box;gap:56px">
+
+      <div style="flex:0 0 460px">
+        <div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:22px">
+          <span style="width:9px;height:9px;border-radius:50%;background:#f59e0b"></span>
+          <span style="font-size:13px;letter-spacing:0.16em;font-weight:700;color:#9c7012">ONE-CLICK INSTALL</span>
+        </div>
+        <h1 style="margin:0 0 20px;font-size:58px;line-height:1.02;letter-spacing:-0.035em;font-weight:800;color:#0f0f10">Install FontLens<br><span style="color:#f59e0b">in one click.</span></h1>
+        <p style="margin:0 0 40px;font-size:19px;line-height:1.5;color:#6b6b6e;max-width:400px">Inspect any page's fonts right from your browser. No signup, no account, no setup.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:420px">
+          ${step(1, 'Open Chrome Web Store', false)}
+          ${step(2, 'Search <b style="font-weight:700">FontLens</b>', false)}
+          ${step(3, 'Click <b style="font-weight:700">Add to Chrome</b>', true)}
+          ${step(4, 'Inspect any page instantly', false)}
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:0;position:relative">
+        <div style="border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 30px 80px rgba(15,23,42,.16);border:1px solid #e8e8ec">
+          <div style="background:#f1f2f4;padding:14px 18px;border-bottom:1px solid #e8e8ec">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <span style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></span>
+              <span style="width:12px;height:12px;border-radius:50%;background:#febc2e"></span>
+              <span style="width:12px;height:12px;border-radius:50%;background:#28c840"></span>
+              <span style="margin-left:14px;font-size:13px;color:#5f5f63;background:#fff;border:1px solid #e2e2e6;border-radius:8px 8px 0 0;padding:6px 14px">FontLens — Chrome Web Store</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="color:#9c9ca0;font-size:15px">‹</span><span style="color:#c4c4c8;font-size:15px">›</span><span style="color:#9c9ca0;font-size:14px">⟳</span>
+              <div style="flex:1;background:#fff;border:1px solid #e2e2e6;border-radius:18px;padding:7px 16px;font-size:13px;color:#3a3a3f">🔒 chromewebstore.google.com/detail/fontlens</div>
+            </div>
+          </div>
+          <div style="padding:34px 36px;display:flex;align-items:center;gap:24px;position:relative">
+            <span style="width:84px;height:84px;border-radius:20px;overflow:hidden;display:inline-flex;flex:0 0 auto;box-shadow:0 4px 14px rgba(0,0,0,.1)">${mark(84)}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#0f0f10">FontLens</div>
+              <div style="font-size:16px;color:#6b6b6e;margin:3px 0 10px">Font inspector &amp; fallback detector</div>
+              <div style="display:flex;align-items:center;gap:10px">${chip('Free')}${dot}${chip('No signup')}${dot}${chip('Local only')}</div>
+            </div>
+            <span style="position:absolute;top:30px;right:36px;font-size:12px;letter-spacing:0.1em;font-weight:700;color:#9c9ca0">FREE</span>
+            <!-- ripple + Add to Chrome -->
+            <div style="position:relative;flex:0 0 auto">
+              <span style="position:absolute;inset:-44px;border-radius:50%;border:1.5px solid rgba(26,115,232,.14)"></span>
+              <span style="position:absolute;inset:-26px;border-radius:50%;border:1.5px solid rgba(26,115,232,.2)"></span>
+              <span style="position:absolute;inset:-10px;border-radius:50%;border:1.5px solid rgba(26,115,232,.28)"></span>
+              <button style="position:relative;display:inline-flex;align-items:center;gap:9px;background:#1a73e8;color:#fff;border:0;border-radius:11px;padding:14px 26px;font-size:17px;font-weight:600;box-shadow:0 6px 18px rgba(26,115,232,.4)"><span style="font-size:19px">+</span> Add to Chrome</button>
+            </div>
+          </div>
+          <div style="border-top:1px solid #eeeef0;background:#fafafb;padding:20px 36px;display:grid;grid-template-columns:repeat(4,1fr)">
+            ${meta('SIZE', '70 KB')}${meta('LANGUAGES', 'English')}${meta('LAST UPDATED', 'Jun 2026')}${meta('STORAGE', 'Local only')}
+          </div>
+        </div>
+        <!-- cursor -->
+        <svg width="30" height="30" viewBox="0 0 30 30" style="position:absolute;right:104px;top:212px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))"><path d="M6 4l16 7-6.5 2.4L13 20 6 4z" fill="#0f0f10" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <!-- ready toast -->
+        <div style="position:absolute;right:-20px;bottom:-120px;width:300px;background:#fff;border:1px solid #ececec;border-radius:14px;box-shadow:0 18px 50px rgba(15,23,42,.16);padding:16px 18px">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><span style="width:26px;height:26px;border-radius:7px;overflow:hidden;display:inline-flex">${mark(26)}</span><span style="font-size:15px;font-weight:600;color:#0f0f10">FontLens</span></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#16a34a;margin-bottom:5px"><span style="width:16px;height:16px;border-radius:50%;background:#16a34a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px">✓</span> Ready to inspect</div>
+          <div style="font-size:13px;line-height:1.45;color:#6b6b6e">Click the icon on any page to see its fonts.</div>
+        </div>
+      </div>
+    </div>
+  </body>`;
+}
+
 // ---- promo SVG scenes ------------------------------------------------------
 function promoSVG(w, h, big) {
   const titleSize = big ? 76 : 40;
@@ -214,10 +293,8 @@ await shot(path.join(SHOTS, '2-type-system.png'), 1280, 800,
   panelScene({ theme: 'light', caption: 'Every type style on the page.', sub: 'Grouped by family, sorted by usage, fallbacks first. Copy any style as CSS, Tailwind, or a design token.' }),
   (page) => injectPanel(page, { theme: 'light', mode: 'inspect' }));
 
-// Screenshot 3 — fallback detection (the wedge), dark
-await shot(path.join(SHOTS, '3-fallback-signal.png'), 1280, 800,
-  panelScene({ theme: 'dark', caption: 'Catch silent font fallbacks.', sub: 'When a requested font fails to load and visitors see a substitute, FontLens flags it with an amber signal. No other inspector does.' }),
-  (page) => injectPanel(page, { theme: 'dark', mode: 'inspect' }));
+// Screenshot 3 — one-click install (white)
+await shot(path.join(SHOTS, '3-one-click-install.png'), 1280, 800, installScene());
 
 // Screenshot 4 — hover chip + expanded card closeup on an article
 await shot(path.join(SHOTS, '4-hover-detail.png'), 1280, 800,

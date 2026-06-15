@@ -139,7 +139,7 @@ UI by `npm run build:store`. Upload in this order:
 
 1. `1-pin-multiple.png` — multi-card pinning on an article (headline interaction).
 2. `2-type-system.png` — side panel, full page type system, fallback-first (light).
-3. `3-fallback-signal.png` — the wedge: amber fallback signal + page banner (dark).
+3. `3-one-click-install.png` — one-click install: Chrome Web Store + step guide (white).
 4. `4-hover-detail.png` — hover chip + expanded detail card with live specimen.
 
 ---
