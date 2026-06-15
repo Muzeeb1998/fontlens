@@ -29,21 +29,22 @@ How to run manually: `chrome://extensions` → Load unpacked (repo root) → exe
 | TC-A2.2 | P0 | Page with a font that fails to load | Hover the affected text | Amber dot + "fallback" + "requested: X" on chip |
 | TC-A2.3 | P0 | System-stack text (`-apple-system`) | Hover | Names OS font ("San Francisco on macOS"), no wrong specific name |
 | TC-A2.4 | P1 | CSP-strict site (github.com) blocks canvas | Hover | Chip shows "couldn't confirm rendering"; no console error |
-| TC-A2.5 | P0 | Chip visible over element X | Move cursor toward chip (still over X) | Chip holds position (anti-chase), reachable |
+| TC-A2.5 | P0 | Chip visible over element X | Move cursor toward chip | Chip follows cursor smoothly (no lag/trail); reachable — content script stops re-detecting once pointer is over our own UI |
 | TC-A2.6 | P1 | Chip visible | Move cursor to different element | Chip repositions + re-detects |
 | TC-A2.7 | P1 | Hover near right/bottom viewport edge | — | Chip flips to stay on-screen |
 | TC-A2.8 | P0 | Font-heavy page | Sweep cursor fast across many elements | No jank/hang (memoized detection); ~60fps |
 
-### A3. Expanded card (View more)
+### A3. Pinned cards (WhatFont-style multi-card)
 
 | ID | P | Pre | Steps | Expected |
 |----|---|-----|-------|----------|
-| TC-A3.1 | P0 | Compact chip showing | Click "View more →" | Expands: Family/Style/Weight/Color+swatch/Size/Line-height + specimen |
-| TC-A3.2 | P0 | Expanded card | Read text | Text is crisp, NOT blurry (will-change dropped when pinned) |
-| TC-A3.3 | P1 | Expanded card | Click × | Card closes, chip hides |
-| TC-A3.4 | P1 | Expanded card | Press Esc | Card closes |
-| TC-A3.5 | P1 | Expanded card | Click outside the card | Card closes |
-| TC-A3.6 | P2 | Expanded card, dark mode | — | Swatch + values contrast cleanly |
+| TC-A3.1 | P0 | Hovering text | Click the text | A persistent card STAMPS at the click point, auto-expanded: Family/Style/Weight/Color+swatch/Size/Line-height + specimen (no second click) |
+| TC-A3.2 | P0 | Pinned card | Read text | Text is crisp, NOT blurry (no will-change on pinned cards) |
+| TC-A3.3 | P0 | Several pinned cards | Click 10 different texts | 10 cards coexist on screen |
+| TC-A3.4 | P1 | Pinned card | Click its × | ONLY that card closes; others remain |
+| TC-A3.5 | P1 | ≥1 pinned card | Press Esc | ALL pinned cards clear |
+| TC-A3.6 | P1 | Compact chip showing | Click "View more →" | Stamps a pinned card (same as clicking text) |
+| TC-A3.7 | P2 | Pinned card, dark mode | — | Swatch + values contrast cleanly |
 
 ### A4. Side panel — Hover mode
 
@@ -150,7 +151,7 @@ How to run manually: `chrome://extensions` → Load unpacked (repo root) → exe
 
 | ID | P | Check | Expected |
 |----|---|-------|----------|
-| TC-B4.1 | P1 | Chip cursor-follow | ~80ms ease, feels attached not jittery |
+| TC-B4.1 | P1 | Chip cursor-follow | Snaps to cursor every frame (no transition) — WhatFont-style, zero trail/lag |
 | TC-B4.2 | P1 | Empty illustration | Gentle float; magnifier scan in inspect |
 | TC-B4.3 | P1 | Scanning skeleton | Shimmer sweep, replaced by cards on result |
 | TC-B4.4 | P0 | OS "Reduce Motion" on | ALL animations disabled (chip, illo, skeleton, toast, row) |
@@ -198,7 +199,7 @@ Most P0/P1 logic already has automated coverage:
 - Panel render, theme flip, download-disabled, hint → `sidepanel/render.test.js`, `test/e2e/static-pages.spec.js`
 - Panel-close teardown, chip-on-demo → `test/e2e/hover-chip.spec.js`
 
-Total automated: **229 vitest + 19 Playwright** green.
+Total automated: **230 vitest + 19 Playwright** green.
 
 ## Manual-only cases (no automated coverage — run before each release)
 
