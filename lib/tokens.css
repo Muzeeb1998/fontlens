@@ -42,6 +42,9 @@
   --specimen-size: 19px;
   /* Card elevation on hover */
   --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+  /* Interactive accent (focus rings) + sticky-header glass fill */
+  --accent-ring: rgba(30,111,216,0.55);
+  --header-bg: rgba(255,255,255,0.72);
 
   --font-ui:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
@@ -69,6 +72,8 @@
   --toggle-active-bg: var(--border-strong);
   --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
   --shadow-card:     0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+  --accent-ring:     rgba(95,168,255,0.55);
+  --header-bg:       rgba(14,14,16,0.72);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -91,5 +96,7 @@
     --toggle-active-bg: var(--border-strong);
     --chip-shadow:     0 8px 24px rgba(0, 0, 0, 0.6);
     --shadow-card:     0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+  --accent-ring:     rgba(95,168,255,0.55);
+  --header-bg:       rgba(14,14,16,0.72);
   }
 }

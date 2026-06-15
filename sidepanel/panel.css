@@ -9,44 +9,66 @@ html, body {
   font-family: var(--font-ui);
   font-size: var(--t-base);
   line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+button:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
 
-/* ===== Header (DESIGN.md §6.2) ===== */
+/* ===== Header — sticky glass ===== */
 .fl-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-5) var(--s-6);
+  padding: var(--s-4) var(--s-5);
   border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
+  backdrop-filter: saturate(1.4) blur(12px);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
 }
+.fl-brand { display: inline-flex; align-items: center; gap: var(--s-2); }
+.fl-mark {
+  display: inline-flex;
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+.fl-mark svg { display: block; }
 .fl-wordmark {
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--t-md);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-/* ===== Mode toggle (DESIGN.md §6.8) ===== */
+/* ===== Mode toggle — premium segmented ===== */
 .fl-mode {
   justify-self: center;
   display: inline-flex;
   background: var(--bg-subtle);
-  border-radius: 6px;
-  padding: 2px;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
 }
 .fl-mode button {
   font-size: var(--t-sm);
-  padding: var(--s-1) var(--s-3);
-  border-radius: 4px;
+  font-weight: 550;
+  padding: 5px var(--s-4);
+  border-radius: 6px;
   color: var(--fg-muted);
+  transition: color 120ms ease;
 }
+.fl-mode button:hover { color: var(--fg); }
 .fl-mode button[aria-pressed="true"] {
   background: var(--toggle-active-bg);
   color: var(--fg);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.04);
 }
 
 /* ===== Header actions: Download + single theme toggle ===== */
