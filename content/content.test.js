@@ -165,7 +165,7 @@ describe('ContentScript — wiring', () => {
     expect(click.defaultPrevented).toBe(true);
   });
 
-  it('Esc keydown unpins the chip', () => {
+  it('Esc keydown clears all pinned cards', () => {
     const msg = fakeMessaging();
     cs = new ContentScript({ detect: fakeDetect, messaging: msg, raf: (fn) => fn(0) });
     cs.enable();
@@ -173,11 +173,11 @@ describe('ContentScript — wiring', () => {
     const p = document.createElement('p');
     p.textContent = 'hi';
     document.body.appendChild(p);
-    cs.overlay.show(p, { x: 0, y: 0 });
-    cs.overlay.pin();
-    expect(cs.overlay.isPinned()).toBe(true);
+    cs.overlay.pinCard(fakeDetect(p), { x: 0, y: 0 });
+    cs.overlay.pinCard(fakeDetect(p), { x: 5, y: 5 });
+    expect(cs.overlay.pinCount()).toBe(2);
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    expect(cs.overlay.isPinned()).toBe(false);
+    expect(cs.overlay.pinCount()).toBe(0);
   });
 });

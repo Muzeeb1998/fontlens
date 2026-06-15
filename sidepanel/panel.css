@@ -22,9 +22,9 @@ button:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2p
   position: sticky;
   top: 0;
   z-index: 10;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--s-3);
   padding: var(--s-4) var(--s-5);
   border-bottom: 1px solid var(--border);
@@ -32,24 +32,9 @@ button:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2p
   backdrop-filter: saturate(1.4) blur(12px);
   -webkit-backdrop-filter: saturate(1.4) blur(12px);
 }
-.fl-brand { display: inline-flex; align-items: center; gap: var(--s-2); }
-.fl-mark {
-  display: inline-flex;
-  width: 18px; height: 18px;
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
-}
-.fl-mark svg { display: block; }
-.fl-wordmark {
-  font-weight: 700;
-  font-size: var(--t-md);
-  letter-spacing: -0.02em;
-}
 
 /* ===== Mode toggle — premium segmented ===== */
 .fl-mode {
-  justify-self: center;
   display: inline-flex;
   background: var(--bg-subtle);
   border-radius: 8px;

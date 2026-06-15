@@ -150,17 +150,18 @@ describe('Overlay — chip render', () => {
     expect(chip.querySelector('.line1').textContent).toBe('—');
   });
 
-  it('hide() hides the chip and clears state', () => {
+  it('hide() hides the floating chip', () => {
     const chip = mountWith(baseDetail());
     overlay.hide();
     expect(chip.style.display).toBe('none');
   });
 
-  it('does not hide the chip when pinned', () => {
+  it('hideIfFloating() hides the chip but leaves pinned cards alone', () => {
     const chip = mountWith(baseDetail());
-    overlay.pin();
-    overlay.hide();
-    expect(chip.style.display).not.toBe('none');
+    overlay.pinCard(baseDetail(), { x: 10, y: 10 });
+    overlay.hideIfFloating();
+    expect(chip.style.display).toBe('none');
+    expect(overlay.pinCount()).toBe(1);
   });
 });
 
@@ -197,17 +198,15 @@ describe('Overlay — positioning', () => {
     Object.defineProperty(window, 'innerHeight', { value:  800, configurable: true });
 
     overlay.move({ x: 100, y: 790 });
-    // y = 790 - 80 (h) - 18 (offsetY) = 692
     expect(chip.style.transform).toBe('translate3d(114px, 692px, 0)');
   });
 
-  it('move() is a no-op when pinned', () => {
+  it('chip follows the cursor on the same element (no freeze/lag)', () => {
     const chip = makeReady({ w: 180, h: 60 });
     overlay.move({ x: 100, y: 100 });
     const before = chip.style.transform;
-    overlay.pin();
     overlay.move({ x: 500, y: 500 });
-    expect(chip.style.transform).toBe(before);
+    expect(chip.style.transform).not.toBe(before);
   });
 });
 
@@ -239,7 +238,7 @@ describe('Overlay — modes + emission', () => {
     expect(overlay._outline.style.display).toBe('none');
   });
 
-  it('handleClick in hover mode emits hover-click but does NOT pin (keeps cursor-follow alive)', () => {
+  it('hover-mode click stamps an expanded card AND emits hover-click', () => {
     const onEmit = vi.fn();
     overlay = new Overlay({ detect: fakeDetect, onEmit });
     overlay.mount();
@@ -249,35 +248,49 @@ describe('Overlay — modes + emission', () => {
 
     let prevented = false;
     const ev = {
+      clientX: 100, clientY: 100,
       preventDefault: () => { prevented = true; },
       stopPropagation: () => {},
     };
-
     overlay.handleClick(el, ev);
 
-    expect(overlay.isPinned()).toBe(false);  // chip keeps following cursor
+    expect(overlay.pinCount()).toBe(1);
+    const card = overlay._pins[0];
+    expect(card.querySelector('.exp-head')).toBeTruthy();
+    expect(card.querySelector('.exp-specimen')).toBeTruthy();
     expect(onEmit).toHaveBeenCalledTimes(1);
     expect(onEmit.mock.calls[0][0]).toMatchObject({ kind: 'hover-click' });
     expect(onEmit.mock.calls[0][0].detail.rendered).toBe('Inter');
     expect(prevented).toBe(true);
   });
 
-  it('Shift+click in hover mode pins the chip (explicit pin gesture)', () => {
-    const onEmit = vi.fn();
-    overlay = new Overlay({ detect: fakeDetect, onEmit });
+  it('ten clicks leave ten cards on screen (WhatFont parity)', () => {
+    overlay = new Overlay({ detect: fakeDetect, onEmit: () => {} });
     overlay.mount();
     overlay.setMode('hover');
     const el = document.createElement('p');
-    overlay.show(el, { x: 100, y: 100 });
-
-    const ev = { shiftKey: true, preventDefault: () => {}, stopPropagation: () => {} };
-    overlay.handleClick(el, ev);
-
-    expect(overlay.isPinned()).toBe(true);
-    expect(onEmit).toHaveBeenCalledTimes(1);
+    for (let i = 0; i < 10; i++) {
+      overlay.handleClick(el, { clientX: 10 * i, clientY: 20, preventDefault() {}, stopPropagation() {} });
+    }
+    expect(overlay.pinCount()).toBe(10);
+    expect(overlay._root.querySelectorAll('.card').length).toBe(10);
   });
 
-  it('handleClick in inspect mode emits inspect-click and prevents host navigation', () => {
+  it("each card's × close removes only that card", () => {
+    overlay = new Overlay({ detect: fakeDetect, onEmit: () => {} });
+    overlay.mount();
+    overlay.setMode('hover');
+    const el = document.createElement('p');
+    overlay.handleClick(el, { clientX: 0, clientY: 0, preventDefault() {}, stopPropagation() {} });
+    overlay.handleClick(el, { clientX: 50, clientY: 50, preventDefault() {}, stopPropagation() {} });
+    expect(overlay.pinCount()).toBe(2);
+
+    overlay._pins[0].querySelector('.exp-close').click();
+    expect(overlay.pinCount()).toBe(1);
+    expect(overlay._root.querySelectorAll('.card').length).toBe(1);
+  });
+
+  it('handleClick in inspect mode emits inspect-click, prevents nav, stamps nothing', () => {
     const onEmit = vi.fn();
     overlay = new Overlay({ detect: fakeDetect, onEmit });
     overlay.mount();
@@ -286,28 +299,29 @@ describe('Overlay — modes + emission', () => {
 
     let prevented = false, stopped = false;
     const ev = { preventDefault: () => { prevented = true; }, stopPropagation: () => { stopped = true; } };
-
     overlay.handleClick(el, ev);
 
     expect(onEmit).toHaveBeenCalledTimes(1);
     expect(onEmit.mock.calls[0][0]).toMatchObject({ kind: 'inspect-click' });
+    expect(overlay.pinCount()).toBe(0);
     expect(prevented).toBe(true);
     expect(stopped).toBe(true);
   });
 
-  it('Esc unpins the chip via handleKey', () => {
+  it('Esc clears all pinned cards', () => {
     overlay = new Overlay({ detect: fakeDetect, onEmit: () => {} });
     overlay.mount();
     overlay.setMode('hover');
-    overlay.show(document.createElement('p'), { x: 100, y: 100 });
-    overlay.pin();
-    expect(overlay.isPinned()).toBe(true);
+    const el = document.createElement('p');
+    overlay.handleClick(el, { clientX: 0, clientY: 0, preventDefault() {}, stopPropagation() {} });
+    overlay.handleClick(el, { clientX: 9, clientY: 9, preventDefault() {}, stopPropagation() {} });
+    expect(overlay.pinCount()).toBe(2);
 
     overlay.handleKey({ key: 'Escape' });
-    expect(overlay.isPinned()).toBe(false);
+    expect(overlay.pinCount()).toBe(0);
   });
 
-  it('Esc also exits inspect mode back to hover', () => {
+  it('Esc exits inspect mode back to hover (when no pins)', () => {
     overlay = new Overlay({ detect: fakeDetect, onEmit: () => {} });
     overlay.mount();
     overlay.setMode('inspect');
@@ -316,8 +330,8 @@ describe('Overlay — modes + emission', () => {
   });
 });
 
-describe('Overlay — compact vs expanded chip', () => {
-  function baseDetail() {
+describe('Overlay — pinned card content', () => {
+  function baseDetail(overrides = {}) {
     return {
       requested: ['Inter', 'sans-serif'],
       rendered: 'Inter',
@@ -330,82 +344,52 @@ describe('Overlay — compact vs expanded chip', () => {
         color: { rgb: 'rgb(34,34,34)', hex: '#222222' },
       },
       confidence: 'high',
+      ...overrides,
     };
   }
 
-  it('compact chip exposes a "View more" button by default', () => {
+  it('compact chip exposes a "View more" button', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
     overlay.show(document.createElement('p'), { x: 50, y: 50 });
     const more = overlay._chip.querySelector('.viewmore');
     expect(more).toBeTruthy();
     expect(more.textContent).toMatch(/View more/);
-    expect(overlay._chip.getAttribute('data-expanded')).toBe('false');
   });
 
-  it('clicking "View more" expands the card and pins the chip', () => {
+  it('clicking "View more" stamps a pinned card', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
     overlay.show(document.createElement('p'), { x: 50, y: 50 });
     overlay._chip.querySelector('.viewmore').click();
-    expect(overlay._chip.getAttribute('data-expanded')).toBe('true');
-    expect(overlay.isPinned()).toBe(true);
-    expect(overlay._chip.querySelector('.exp-head')).toBeTruthy();
-    expect(overlay._chip.querySelector('.exp-specimen')).toBeTruthy();
-    expect(overlay._chip.querySelector('.exp-color-swatch')).toBeTruthy();
+    expect(overlay.pinCount()).toBe(1);
+    expect(overlay._pins[0].querySelector('.exp-head')).toBeTruthy();
+    expect(overlay._pins[0].querySelector('.exp-color-swatch')).toBeTruthy();
   });
 
-  it('expanded view shows Family/Style/Weight/Color/Size/Line Height labels', () => {
+  it('pinned card shows Family/Style/Weight/Color/Size/Line Height labels', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
-    overlay.show(document.createElement('p'), { x: 50, y: 50 });
-    overlay._setExpanded(true);
-    const labels = [...overlay._chip.querySelectorAll('.exp-label')].map(n => n.textContent.trim());
+    const card = overlay.pinCard(baseDetail(), { x: 50, y: 50 });
+    const labels = [...card.querySelectorAll('.exp-label')].map(n => n.textContent.trim());
     expect(labels).toEqual(['Family', 'Style', 'Weight', 'Color', 'Size', 'Line Height']);
   });
 
   it('value cells carry a title tooltip with the full string (long-family-name fix, TC-B7.2)', () => {
-    overlay = new Overlay({
-      detect: () => ({ ...baseDetail(), rendered: 'AVeryLongUnbreakableFontFamilyName' }),
-      onEmit: () => {},
-    });
+    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
-    overlay.show(document.createElement('p'), { x: 50, y: 50 });
-    overlay._setExpanded(true);
-    const familyVal = overlay._chip.querySelector('.exp-value');
+    const card = overlay.pinCard(baseDetail({ rendered: 'AVeryLongUnbreakableFontFamilyName' }), { x: 5, y: 5 });
+    const familyVal = card.querySelector('.exp-value');
     expect(familyVal.title).toBe('AVeryLongUnbreakableFontFamilyName');
     expect(familyVal.textContent).toContain('AVeryLongUnbreakableFontFamilyName');
   });
 
-  it('close button collapses + hides the chip', () => {
+  it('color swatch background matches detected hex', () => {
     overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
     overlay.mount();
-    overlay.show(document.createElement('p'), { x: 50, y: 50 });
-    overlay._setExpanded(true);
-    overlay._chip.querySelector('.exp-close').click();
-    expect(overlay._chip.getAttribute('data-expanded')).toBe('false');
-    expect(overlay._chip.style.display).toBe('none');
-    expect(overlay.isPinned()).toBe(false);
-  });
-
-  it('Esc on expanded card closes it', () => {
-    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
-    overlay.mount();
-    overlay.show(document.createElement('p'), { x: 50, y: 50 });
-    overlay._setExpanded(true);
-    overlay.handleKey({ key: 'Escape' });
-    expect(overlay._chip.getAttribute('data-expanded')).toBe('false');
-    expect(overlay._chip.style.display).toBe('none');
-  });
-
-  it('chip follows the cursor on the same element (no freeze/lag)', () => {
-    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
-    overlay.mount();
-    const el = document.createElement('p');
-    overlay.show(el, { x: 100, y: 100 });
-    const firstTransform = overlay._chip.style.transform;
-    overlay.show(el, { x: 500, y: 500 }); // cursor moved, same element
-    expect(overlay._chip.style.transform).not.toBe(firstTransform); // repositioned
+    const card = overlay.pinCard(baseDetail(), { x: 5, y: 5 });
+    const sw = card.querySelector('.exp-color-swatch');
+    expect(sw.style.background || sw.style.backgroundColor).toMatch(/#222222|rgb\(34,\s*34,\s*34\)/i);
   });
 
   it('same-element re-show does NOT re-run detect (cheap follow)', () => {
@@ -416,27 +400,6 @@ describe('Overlay — compact vs expanded chip', () => {
     overlay.show(el, { x: 100, y: 100 });
     const callsAfterFirst = detect.mock.calls.length;
     overlay.show(el, { x: 300, y: 300 });
-    expect(detect.mock.calls.length).toBe(callsAfterFirst); // no extra detect
-  });
-
-  it('show() on a DIFFERENT element re-positions the chip', () => {
-    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
-    overlay.mount();
-    const a = document.createElement('p');
-    const b = document.createElement('p');
-    overlay.show(a, { x: 100, y: 100 });
-    const t1 = overlay._chip.style.transform;
-    overlay.show(b, { x: 500, y: 500 });
-    expect(overlay._chip.style.transform).not.toBe(t1);
-  });
-
-  it('color swatch background matches detected hex', () => {
-    overlay = new Overlay({ detect: () => baseDetail(), onEmit: () => {} });
-    overlay.mount();
-    overlay.show(document.createElement('p'), { x: 50, y: 50 });
-    overlay._setExpanded(true);
-    const sw = overlay._chip.querySelector('.exp-color-swatch');
-    // happy-dom normalises background to a longhand; just assert it isn't empty
-    expect(sw.style.background || sw.style.backgroundColor).toMatch(/#222222|rgb\(34,\s*34,\s*34\)/i);
+    expect(detect.mock.calls.length).toBe(callsAfterFirst);
   });
 });

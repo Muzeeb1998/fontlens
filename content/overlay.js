@@ -1,19 +1,19 @@
-// content/overlay.js — Shadow-DOM hover chip + inspect outline.
+// content/overlay.js — Shadow-DOM hover chip + inspect outline + pinned cards.
 // No chrome.* references — consumers wire messaging.
+//
+// Interaction model (WhatFont parity):
+//   • Hover  → a single floating COMPACT chip follows the cursor (preview).
+//   • Click  → STAMPS a persistent, auto-expanded card at the click point.
+//             Each click leaves another card; ten clicks → ten cards.
+//   • Each pinned card has its own × close button; Esc clears them all.
 
 const STYLE_CSS = `
 :host { all: initial; position: fixed; top: 0; left: 0; z-index: 2147483647; pointer-events: none; contain: layout style; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-:host([data-pinned="true"]) { pointer-events: auto; }
 
-/* ---------- compact chip ---------- */
+/* ---------- floating compact chip (hover preview) ---------- */
 .chip { position: absolute; top: 0; left: 0; min-width: 140px; max-width: 280px; padding: 10px 12px; background: #ffffff; color: #0f0f10; border: 1px solid #ececec; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); pointer-events: auto; user-select: none; transform: translate3d(0,0,0); will-change: transform; }
-.chip[data-pinned="true"] { outline: 2px solid #d4d4d8; outline-offset: 2px; }
-/* When expanded the chip is pinned (no cursor-follow), so drop the
-   compositor-layer promotion — it softens text on HiDPI. Crisp render. */
-.chip[data-expanded="true"] { min-width: 280px; max-width: 340px; padding: 14px 16px; will-change: auto; transition: none; }
 @media (prefers-color-scheme: dark) {
   .chip { background:#0e0e10; color:#f5f5f7; border-color:#26262a; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
-  .chip[data-pinned="true"] { outline-color:#3a3a3f; }
 }
 @media (prefers-reduced-motion: reduce) { .chip, .outline { transition: none; } }
 
@@ -33,7 +33,11 @@ const STYLE_CSS = `
 .viewmore:hover, .viewmore:focus-visible { text-decoration: underline; outline: none; }
 @media (prefers-color-scheme: dark) { .viewmore { color:#5fa8ff; } }
 
-/* ---------- expanded detail card ---------- */
+/* ---------- pinned expanded card (stamped on click) ---------- */
+.card { position: absolute; top: 0; left: 0; min-width: 280px; max-width: 340px; padding: 14px 16px; background: #ffffff; color: #0f0f10; border: 1px solid #ececec; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.20); pointer-events: auto; user-select: none; }
+@media (prefers-color-scheme: dark) {
+  .card { background:#0e0e10; color:#f5f5f7; border-color:#26262a; box-shadow:0 10px 30px rgba(0,0,0,0.6); }
+}
 .exp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #ececec; }
 @media (prefers-color-scheme: dark) { .exp-head { border-bottom-color:#26262a; } }
 .exp-title { font-weight: 650; font-size: 15px; line-height: 1.25; letter-spacing: -0.01em; }
@@ -67,13 +71,11 @@ export class Overlay {
     this._onEmit = typeof onEmit === 'function' ? onEmit : () => {};
     this._host = null;
     this._root = null;
-    this._chip = null;
+    this._chip = null;        // floating compact preview
     this._outline = null;
-    this._pinned = false;
+    this._pins = [];          // pinned expanded cards (multiple)
     this._mode = 'hover';
     this._lastDetail = null;
-    this._expanded = false;
-    this._outsideClickHandler = null;
   }
 
   mount() {
@@ -106,15 +108,13 @@ export class Overlay {
   }
 
   unmount() {
-    this._removeOutsideClickHandler();
     if (!this._host) return;
     this._host.remove();
     this._host = null;
     this._root = null;
     this._chip = null;
     this._outline = null;
-    this._pinned = false;
-    this._expanded = false;
+    this._pins = [];
     this._lastDetail = null;
   }
 
@@ -141,13 +141,7 @@ export class Overlay {
     const chip = this._chip;
     chip.replaceChildren();
     chip.style.display = 'block';
-    chip.setAttribute('data-expanded', this._expanded ? 'true' : 'false');
 
-    if (this._expanded) this._renderExpanded(chip, detail);
-    else this._renderCompact(chip, detail);
-  }
-
-  _renderCompact(chip, detail) {
     const line1 = document.createElement('div');
     line1.className = 'line1';
     line1.textContent = detail.rendered || '—';
@@ -187,24 +181,28 @@ export class Overlay {
       chip.appendChild(lc);
     }
 
-    // View more → expanded detail card.
+    // View more → stamp a pinned card (same as clicking the text).
     const more = document.createElement('button');
     more.type = 'button';
     more.className = 'viewmore';
     more.textContent = 'View more →';
-    more.setAttribute('aria-label', 'Show full font detail');
+    more.setAttribute('aria-label', 'Pin full font detail');
     more.addEventListener('click', (ev) => {
       ev.stopPropagation();
-      this._setExpanded(true);
+      if (this._lastDetail) this.pinCard(this._lastDetail.detail, this._lastDetail.cursor);
     });
     chip.appendChild(more);
   }
 
-  _renderExpanded(chip, detail) {
+  // Build a standalone expanded card element (its own × removes just itself).
+  _buildExpandedCard(detail) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
     const m = detail.metrics || {};
     const family = detail.rendered || '—';
     const weight = m.weight ?? '—';
-    const style  = m.style || detail?.requested?.length ? (m.style || 'normal') : 'normal';
+    const style  = m.style || 'normal';
     const size   = m.size ?? '—';
     const lh     = m.lineHeight ?? '—';
     const color  = m.color?.rgb || m.color?.hex || '—';
@@ -227,24 +225,23 @@ export class Overlay {
     close.type = 'button';
     close.className = 'exp-close';
     close.textContent = '×';
-    close.setAttribute('aria-label', 'Close detail');
+    close.setAttribute('aria-label', 'Close card');
     close.addEventListener('click', (ev) => {
       ev.stopPropagation();
-      this._setExpanded(false);
-      this.hide();
+      this.removePin(card);
     });
     head.appendChild(close);
-    chip.appendChild(head);
+    card.appendChild(head);
 
     const grid = document.createElement('div');
     grid.className = 'exp-grid';
     const cells = [
-      ['Family',      family,       false],
-      ['Style',       style,        false],
+      ['Family',      family,         false],
+      ['Style',       style,          false],
       ['Weight',      String(weight), false],
-      ['Color',       color,        swatch],
-      ['Size',        size,         false],
-      ['Line Height', lh,           false],
+      ['Color',       color,          swatch],
+      ['Size',        size,           false],
+      ['Line Height', lh,             false],
     ];
     for (const [label, value, sw] of cells) {
       const cell = document.createElement('div');
@@ -254,7 +251,7 @@ export class Overlay {
       lab.textContent = label;
       const val = document.createElement('div');
       val.className = 'exp-value';
-      val.title = String(value); // full string on hover when truncated
+      val.title = String(value);
       if (sw) {
         const s = document.createElement('span');
         s.className = 'exp-color-swatch';
@@ -266,15 +263,14 @@ export class Overlay {
       cell.appendChild(val);
       grid.appendChild(cell);
     }
-    chip.appendChild(grid);
+    card.appendChild(grid);
 
-    // Specimen line rendered IN the detected font.
     const spec = document.createElement('div');
     spec.className = 'exp-specimen';
     spec.textContent = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQq';
     if (detail.rendered) spec.style.fontFamily = `"${detail.rendered}", sans-serif`;
     spec.style.fontWeight = String(weight);
-    chip.appendChild(spec);
+    card.appendChild(spec);
 
     if (detail.isFallback) {
       const fb = document.createElement('div');
@@ -285,128 +281,91 @@ export class Overlay {
       const txt = document.createElement('span');
       txt.textContent = `fallback — requested: ${detail.requested?.[0] || ''}`;
       fb.appendChild(txt);
-      chip.appendChild(fb);
+      card.appendChild(fb);
     }
+
+    return card;
   }
 
-  _setExpanded(on) {
-    this._expanded = !!on;
-    if (this._expanded) {
-      this._pinned = true;
-      if (this._host) this._host.setAttribute('data-pinned', 'true');
-      this._installOutsideClickHandler();
-    } else {
-      this._pinned = false;
-      if (this._host) this._host.removeAttribute('data-pinned');
-      this._removeOutsideClickHandler();
-    }
-    if (this._chip) this._chip.setAttribute('data-pinned', this._pinned ? 'true' : 'false');
-    if (this._lastDetail?.detail) this._renderChip(this._lastDetail.detail);
+  // ---------- pinned cards (multi) ----------
+
+  pinCard(detail, cursor) {
+    if (!detail) return null;
+    if (!this._host) this.mount();
+    const card = this._buildExpandedCard(detail);
+    this._root.appendChild(card);
+    this._pins.push(card);
+    this._positionEl(card, cursor || { x: 0, y: 0 });
+    this._host.setAttribute('data-pinned', 'true');
+    return card;
   }
 
-  _installOutsideClickHandler() {
-    if (this._outsideClickHandler) return;
-    this._outsideClickHandler = (ev) => {
-      const path = ev.composedPath ? ev.composedPath() : [];
-      if (this._host && path.includes(this._host)) return;
-      this._setExpanded(false);
-      this.hide();
-    };
-    document.addEventListener('mousedown', this._outsideClickHandler, true);
+  removePin(card) {
+    const i = this._pins.indexOf(card);
+    if (i >= 0) this._pins.splice(i, 1);
+    if (card) card.remove();
+    if (!this._pins.length) this._host?.removeAttribute('data-pinned');
   }
 
-  _removeOutsideClickHandler() {
-    if (!this._outsideClickHandler) return;
-    document.removeEventListener('mousedown', this._outsideClickHandler, true);
-    this._outsideClickHandler = null;
+  clearPins() {
+    for (const c of this._pins) c.remove();
+    this._pins = [];
+    this._host?.removeAttribute('data-pinned');
   }
 
-  // ---------- show / hide / pin ----------
+  pinCount() { return this._pins.length; }
+
+  // ---------- show / hide ----------
 
   show(el, cursor) {
     if (!this._host) this.mount();
-    if (this._pinned) return;
 
-    // Always follow the cursor (cheap transform) so the chip tracks
-    // smoothly — never freeze on a large element, that read as lag.
-    // Only the EXPENSIVE work (detect + re-render) is skipped when the
-    // element under the cursor hasn't changed. Reachability of "View more"
-    // is handled by content.js: once the pointer is over the chip itself,
-    // it's our own UI and show() stops being called, so the chip settles.
+    // Always follow the cursor (cheap transform) so the chip tracks smoothly.
+    // Only the EXPENSIVE work (detect + re-render) is skipped when the element
+    // under the cursor hasn't changed.
     const sameEl = this._lastDetail?.el === el;
     const detail = sameEl && this._lastDetail?.detail
       ? this._lastDetail.detail
       : this._detect(el);
     this._lastDetail = { detail, el, cursor };
     if (!sameEl) this._renderChip(detail);
-    this._position(cursor);
+    this._positionEl(this._chip, cursor);
   }
 
-  // Hide only a free-floating chip (cursor left the page). Never closes a
-  // pinned or expanded card — those are deliberate user state.
+  // Hide the floating preview chip (cursor left the page). Pinned cards persist.
   hideIfFloating() {
-    if (this._pinned || this._expanded) return;
     if (this._chip) this._chip.style.display = 'none';
     this._lastDetail = null; // force re-detect+reposition on next enter
   }
 
   hide() {
-    if (this._pinned && !this._expanded) return;
-    if (this._expanded) {
-      // explicit dismiss path: collapse + drop pin
-      this._expanded = false;
-      this._pinned = false;
-      this._host?.removeAttribute('data-pinned');
-      this._removeOutsideClickHandler();
-    }
-    if (!this._chip) return;
-    this._chip.style.display = 'none';
+    if (this._chip) this._chip.style.display = 'none';
   }
-
-  pin() {
-    if (!this._lastDetail) return;
-    this._pinned = true;
-    if (this._host)  this._host.setAttribute('data-pinned', 'true');
-    if (this._chip)  this._chip.setAttribute('data-pinned', 'true');
-  }
-
-  unpin() {
-    this._pinned = false;
-    if (this._host)  this._host.removeAttribute('data-pinned');
-    if (this._chip)  this._chip.removeAttribute('data-pinned');
-  }
-
-  isPinned() { return this._pinned; }
 
   // ---------- positioning ----------
 
-  _position(cursor) {
-    if (!this._chip || !cursor) return;
+  _positionEl(el, cursor) {
+    if (!el || !cursor) return;
     const offsetX = 14;
     const offsetY = 18;
-    const rect = this._chip.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
     const vw = (typeof window !== 'undefined' && window.innerWidth)  || 1024;
     const vh = (typeof window !== 'undefined' && window.innerHeight) || 768;
 
     let x = cursor.x + offsetX;
     let y = cursor.y + offsetY;
 
-    if (x + rect.width > vw) {
-      x = cursor.x - rect.width - offsetX;
-    }
-    if (y + rect.height > vh) {
-      y = cursor.y - rect.height - offsetY;
-    }
+    if (x + rect.width > vw) x = cursor.x - rect.width - offsetX;
+    if (y + rect.height > vh) y = cursor.y - rect.height - offsetY;
     if (x < 0) x = 0;
     if (y < 0) y = 0;
 
-    this._chip.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+    el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
   }
 
   move(cursor) {
-    if (this._pinned) return;
     if (!this._chip || this._chip.style.display === 'none') return;
-    this._position(cursor);
+    this._positionEl(this._chip, cursor);
   }
 
   // ---------- mode ----------
@@ -414,9 +373,7 @@ export class Overlay {
   setMode(mode) {
     if (mode !== 'hover' && mode !== 'inspect') return;
     this._mode = mode;
-    if (mode === 'hover' && this._outline) {
-      this._outline.style.display = 'none';
-    }
+    if (mode === 'hover' && this._outline) this._outline.style.display = 'none';
   }
 
   getMode() { return this._mode; }
@@ -443,22 +400,21 @@ export class Overlay {
       return;
     }
 
-    // Hover mode click: emit the detected row to the side panel BUT keep
-    // the floating chip live so the user can continue hovering other text
-    // and see new detections (WhatFont parity). Pinning is reserved for an
-    // explicit gesture (Shift+click) so cursor-follow stays the default.
+    // Hover-mode click → stamp a persistent expanded card at the click point
+    // (WhatFont parity: every click leaves a card, multiple coexist). Also
+    // emit the detected row to the side panel.
     const detail = this._lastDetail?.detail || this._detect(el);
-    if (ev && (ev.shiftKey || ev.metaKey)) {
-      this.pin();
-    }
+    const cursor = (ev && Number.isFinite(ev.clientX))
+      ? { x: ev.clientX, y: ev.clientY }
+      : (this._lastDetail?.cursor || { x: 0, y: 0 });
+    this.pinCard(detail, cursor);
     this._onEmit({ kind: 'hover-click', target: el, detail });
   }
 
   handleKey(ev) {
     if (!ev) return;
     if (ev.key === 'Escape') {
-      if (this._expanded) { this._setExpanded(false); this.hide(); return; }
-      if (this._pinned) { this.unpin(); return; }
+      if (this._pins.length) { this.clearPins(); return; }
       if (this._mode === 'inspect') { this.setMode('hover'); return; }
     }
   }
