@@ -5,7 +5,15 @@
   "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
   "background": { "service_worker": "service-worker.js", "type": "module" },
   "side_panel": { "default_path": "sidepanel/panel.html" },
-  "action": { "default_title": "Inspect fonts" },
+  "action": {
+    "default_title": "Inspect fonts",
+    "default_icon": {
+      "16": "assets/icons/16.png",
+      "32": "assets/icons/32.png",
+      "48": "assets/icons/48.png",
+      "128": "assets/icons/128.png"
+    }
+  },
   "commands": {
     "toggle-inspect": {
       "suggested_key": { "default": "Alt+Shift+F" },
@@ -13,7 +21,7 @@
     }
   },
   "options_page": "options/options.html",
-  "icons": { "16": "assets/icons/16.png", "48": "assets/icons/48.png", "128": "assets/icons/128.png" },
+  "icons": { "16": "assets/icons/16.png", "32": "assets/icons/32.png", "48": "assets/icons/48.png", "128": "assets/icons/128.png" },
   "web_accessible_resources": [
     {
       "resources": ["content/*.js", "lib/*.js"],
